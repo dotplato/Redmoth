@@ -1,0 +1,650 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f7f7f4;
+  --bg-deep: #eeeee9;
+  --surface: #ffffff;
+  --ink: #0b0b0b;
+  --ink-soft: #262624;
+  --muted: #5d5d58;
+  --faint: #8f8f88;
+  --line: #e5e5df;
+  --line-strong: #d2d2ca;
+  /* Primary yellow is a fill colour only; text on it (and next to it) stays ink. */
+  --accent: #ffd500;
+  --accent-hover: #f0c800;
+  --accent-ink: #0b0b0b;
+  --accent-soft: #fff7c7;
+  --go: #0b0b0b;
+  --go-ink: #ffffff;
+  --ok: #1d7a49;
+  --ok-soft: #e2f3e9;
+  --warn: #6e5800;
+  --warn-soft: #fff3b8;
+  --danger: #c4321c;
+  --danger-soft: #fce9e5;
+  --shadow-sm: 0 1px 2px rgba(11, 11, 11, 0.05);
+  --shadow: 0 1px 2px rgba(11, 11, 11, 0.04), 0 8px 24px -8px rgba(11, 11, 11, 0.12);
+  --shadow-lg: 0 2px 4px rgba(11, 11, 11, 0.04), 0 24px 60px -16px rgba(11, 11, 11, 0.24);
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-sansation);
+  --font-display: var(--font-righteous);
+}
+
+/* Base rules must live in a layer: unlayered CSS beats every Tailwind utility in v4,
+   which previously made `a { color: inherit }` hide text on dark button links. */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sansation), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px var(--accent);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-righteous), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: var(--font-righteous), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+
+  /* Yellow highlighter stroke behind a word in a heading. */
+  .mark {
+    background: linear-gradient(transparent 58%, var(--accent) 58%, var(--accent) 92%, transparent 92%);
+    padding-inline: 0.06em;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .container-page {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 76rem;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-page {
+      padding-inline: 2rem;
+    }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 2.5rem;
+    padding-inline: 1rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition:
+      background-color 150ms,
+      border-color 150ms,
+      color 150ms,
+      transform 150ms,
+      box-shadow 150ms;
+  }
+
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .btn-lg {
+    height: 3rem;
+    padding-inline: 1.375rem;
+    font-size: 0.9375rem;
+  }
+
+  .btn-sm {
+    height: 2rem;
+    padding-inline: 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--ink-soft);
+  }
+
+  .btn-accent {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow:
+      inset 0 0 0 1px rgba(11, 11, 11, 0.08),
+      0 6px 18px -8px rgba(201, 160, 0, 0.7);
+  }
+
+  .btn-accent:hover {
+    background: var(--accent-hover);
+  }
+
+  .btn-outline {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line-strong);
+  }
+
+  .btn-outline:hover {
+    border-color: var(--ink);
+  }
+
+  .btn-ghost {
+    color: var(--muted);
+  }
+
+  .btn-ghost:hover {
+    color: var(--ink);
+    background: var(--bg-deep);
+  }
+
+  .btn-danger {
+    color: var(--danger);
+  }
+
+  .btn-danger:hover {
+    background: var(--danger-soft);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .field {
+    display: grid;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+
+  .field-hint {
+    font-weight: 400;
+    color: var(--faint);
+  }
+
+  .input {
+    width: 100%;
+    height: 2.75rem;
+    padding-inline: 0.875rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 0.75rem;
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 0.875rem;
+    font-weight: 400;
+    transition:
+      border-color 150ms,
+      box-shadow 150ms;
+  }
+
+  textarea.input {
+    height: auto;
+    min-height: 6rem;
+    padding-block: 0.75rem;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  select.input {
+    appearance: none;
+    padding-right: 2.25rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%236b675e' stroke-width='1.6'%3E%3Cpath d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+  }
+
+  .input::placeholder {
+    color: var(--faint);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .input[type="file"] {
+    height: auto;
+    padding: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  .input[type="file"]::file-selector-button {
+    margin-right: 0.75rem;
+    height: 2rem;
+    padding-inline: 0.75rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: var(--bg-deep);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.5rem;
+    padding-inline: 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+  }
+
+  .badge-published {
+    background: var(--ok-soft);
+    color: var(--ok);
+  }
+
+  .badge-draft {
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+
+  .badge-rejected {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .badge-archived {
+    background: var(--bg-deep);
+    color: var(--muted);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.125rem;
+    padding-inline: 0.875rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink-soft);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition:
+      border-color 150ms,
+      background-color 150ms;
+  }
+
+  .chip:hover {
+    border-color: var(--ink);
+  }
+
+  .chip[aria-current="page"],
+  .chip[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .chip-count {
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.6;
+  }
+
+  /* Outline tags: a coloured dot + label. Featured is ink/yellow; pricing tags take their colours from --tag-fg/--tag-bg. */
+  .tag-featured,
+  .tag-price {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 1.375rem;
+    padding-inline: 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .tag-featured::before,
+  .tag-price::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 1px var(--ink);
+  }
+
+  .tag-price {
+    border-color: var(--tag-fg, var(--ok));
+    color: var(--tag-fg, var(--ok));
+    background: var(--tag-bg, var(--ok-soft));
+  }
+
+  .tag-price::before {
+    background: var(--tag-fg, var(--ok));
+    box-shadow: none;
+  }
+
+  /* Admin-only marker for listings that came from the public submit form. */
+  .tag-submitted {
+    display: inline-flex;
+    align-items: center;
+    height: 1.375rem;
+    padding-inline: 0.5rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 700;
+  }
+}
+
+.paper-grain {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(11, 11, 11, 0.07) 1px, transparent 0);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 0%, black 30%, transparent 75%);
+}
+
+.glow {
+  background:
+    radial-gradient(40% 60% at 85% 10%, rgba(255, 213, 0, 0.22), transparent 70%),
+    radial-gradient(35% 50% at 10% 0%, rgba(255, 213, 0, 0.1), transparent 70%);
+}
+
+.screenshot-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 88%;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 0.5rem;
+}
+
+.screenshot-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.screenshot-rail > * {
+  scroll-snap-align: start;
+}
+
+@media (min-width: 768px) {
+  .screenshot-rail {
+    grid-auto-columns: minmax(64%, 880px);
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.prose-body p + p {
+  margin-top: 1.1em;
+}
+
+/* Tool page "In practice" card: fades up once, then a slow shimmer runs along its accent edge. */
+.practice {
+  animation: practice-in 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.practice-edge {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 35%, #fff3a6 50%, var(--accent) 65%, var(--accent) 100%);
+  background-size: 100% 300%;
+  animation: practice-shimmer 4s ease-in-out infinite;
+}
+
+@keyframes practice-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes practice-shimmer {
+  0%,
+  100% {
+    background-position: 0 0%;
+  }
+  50% {
+    background-position: 0 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice,
+  .practice-edge {
+    animation: none;
+  }
+}
+
+/* ================= Hero app network (AppNetwork.tsx) ================= */
+.tm-network {
+  --tm-primary: var(--accent);
+  --tm-primary-mid: #e6bd00;
+  --tm-primary-deep: #a88600;
+  --tm-ink: var(--ink);
+  --tm-tile-top: #ffffff;
+  --tm-grid: #ece2b6;
+
+  position: relative;
+  width: 100%;
+  /* Height comes from the screen so the hero fits one view (~480px above the scene is header, title,
+     search and chips); width follows the wide 1280×390 scene. Narrow screens use the full width at a
+     ~1.9:1 box and the SVG crops to its centre (preserveAspectRatio slice). */
+  --tm-h: min(clamp(200px, calc(100svh - 480px), 380px), calc((100vw - 32px) / 1.9));
+  height: var(--tm-h);
+  max-width: calc(var(--tm-h) * 3.282);
+  margin-inline: auto;
+  border-radius: 24px;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.tm-network svg { display: block; width: 100%; height: 100%; }
+.tm-scene, .tm-grid-layer { transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+
+.tm-grid-line { stroke: var(--tm-grid); stroke-width: 1; fill: none; }
+.tm-grid-cell { fill: var(--tm-primary); opacity: .16; }
+.tm-grid-dot  { fill: var(--tm-primary-mid); opacity: .5; }
+
+.tm-wire {
+  fill: none; stroke: var(--tm-primary); stroke-width: 7;
+  stroke-linecap: round; stroke-linejoin: round;
+  opacity: .38; transition: opacity .3s;
+}
+.tm-flow {
+  fill: none; stroke: var(--tm-primary-deep); stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 5 11;
+  animation: tm-march 1.4s linear infinite;
+  opacity: 0; transition: opacity .5s, stroke .3s;
+}
+.tm-ready .tm-flow { opacity: .7; }
+.tm-wire-group.is-live .tm-wire { opacity: .7; }
+.tm-wire-group.is-active .tm-wire { opacity: 1; }
+.tm-wire-group.is-active .tm-flow { opacity: 1; stroke: var(--tm-ink); animation-duration: .55s; }
+.tm-node { fill: #fff; stroke: var(--tm-primary-mid); stroke-width: 2; opacity: 0; transition: opacity .5s; }
+.tm-ready .tm-node { opacity: 1; }
+@keyframes tm-march { to { stroke-dashoffset: -32; } }
+
+.tm-packet-glow { fill: var(--tm-primary); opacity: .6; }
+.tm-packet-core { fill: var(--tm-ink); }
+
+.tm-tile { cursor: pointer; outline: none; }
+.tm-shadow, .tm-label-wrap { pointer-events: none; }
+.tm-shadow { opacity: 0; }
+.tm-shadow.in { animation: tm-fade .8s ease both; }
+.tm-shadow-inner { transform-box: fill-box; transform-origin: center; transition: transform .35s, opacity .35s; }
+.tm-shadow-glow { fill: var(--tm-primary); opacity: .55; }
+.tm-shadow-dark { fill: var(--tm-ink); opacity: .22; }
+.tm-shadow-cast { fill: var(--tm-ink); opacity: .22; }
+/* Isometric lighting (light from the top-left). */
+.tm-bevel  { fill: none; stroke: #ffffff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .95; }
+.tm-corner { stroke: url(#tm-corner); stroke-width: 1.6; }
+.tm-edge   { fill: none; stroke: rgba(11, 11, 11, .14); stroke-width: 1.2; }
+
+.tm-enter { opacity: 0; }
+.tm-enter.in { animation: tm-drop .75s cubic-bezier(.2,1.35,.4,1) both; }
+.tm-lift { transition: transform .38s cubic-bezier(.3,1.6,.5,1); }
+.tm-bump.ping { animation: tm-bump .5s cubic-bezier(.3,1.6,.5,1); }
+
+/* Gradients are defined in the component's <defs>; flat colours are the fallback. */
+.tm-side-l { fill: var(--tm-primary); fill: url(#tm-side-l-fill); }
+.tm-side-r { fill: var(--tm-primary-mid); fill: url(#tm-side-r-fill); }
+.tm-top    { fill: var(--tm-tile-top); fill: url(#tm-top-sheen); stroke: rgba(11,11,11,.06); stroke-width: 1; transition: stroke .2s; }
+.tm-mark   { fill: var(--tm-ink); }
+.tm-mark-dot { fill: var(--tm-primary); stroke: var(--tm-ink); stroke-width: 2; }
+/* Center hub: a realistic black block under a white top. A same-colour round-joined stroke
+   softens the polygon corners so the block reads as rounded rather than paper-cut. */
+.tm-hub .tm-side-l { fill: url(#tm-hub-l); stroke: url(#tm-hub-l); stroke-width: 7; stroke-linejoin: round; }
+.tm-hub .tm-side-r { fill: url(#tm-hub-r); stroke: url(#tm-hub-r); stroke-width: 7; stroke-linejoin: round; }
+.tm-hub .tm-top    { fill: url(#tm-hub-top); stroke: #ffffff; stroke-width: 7; stroke-linejoin: round; }
+.tm-hub .tm-edge   { stroke: rgba(11, 11, 11, .18); stroke-width: 1.6; }
+.tm-hub .tm-corner { stroke-width: 2; }
+.tm-hub .tm-shadow-dark { opacity: .4; }
+.tm-hub .tm-shadow-cast { opacity: .34; }
+/* Empty slots: pale dashed "Your app here" tiles that link to the submit form. */
+.tm-ghost .tm-side-l { fill: #ecece6; }
+.tm-ghost .tm-side-r { fill: #deded7; }
+.tm-ghost .tm-top { fill: rgba(255, 255, 255, .75); stroke: #b9b9b0; stroke-width: 1.4; stroke-dasharray: 5 4; }
+.tm-ghost .tm-bevel, .tm-ghost .tm-corner { display: none; }
+.tm-ghost .tm-shadow-glow { opacity: 0; }
+.tm-ghost .tm-shadow-cast, .tm-ghost .tm-shadow-dark { opacity: .08; }
+.tm-plus { fill: #b9b9b0; transition: fill .2s; }
+.tm-ghost:hover .tm-plus, .tm-ghost:focus-visible .tm-plus { fill: var(--tm-ink); }
+.tm-ghost:hover .tm-top, .tm-ghost:focus-visible .tm-top { stroke: var(--tm-ink); }
+.tm-wire-group.is-ghost .tm-wire { opacity: .14; }
+.tm-ready .tm-wire-group.is-ghost .tm-flow { opacity: .22; }
+.tm-initial { fill: var(--tm-ink); font-family: var(--font-righteous), sans-serif; font-size: 26px; }
+
+.tm-tile:hover .tm-lift,
+.tm-tile:focus-visible .tm-lift { transform: translateY(-11px); }
+.tm-tile:active .tm-lift { transform: translateY(-3px); transition-duration: .1s; }
+.tm-tile:hover .tm-shadow-inner,
+.tm-tile:focus-visible .tm-shadow-inner { transform: scale(.86); opacity: .75; }
+.tm-tile:focus-visible .tm-top { stroke: var(--tm-ink); stroke-width: 2.5; }
+
+.tm-label { opacity: 0; transform: translateY(6px); transition: opacity .2s, transform .28s cubic-bezier(.3,1.5,.5,1); }
+.tm-tile:hover .tm-label,
+.tm-tile:focus-visible .tm-label { opacity: 1; transform: none; }
+.tm-label rect, .tm-label path { fill: var(--tm-ink); }
+.tm-label text { fill: #fff; font-size: 12.5px; font-weight: 700; font-family: var(--font-sansation), sans-serif; }
+
+@keyframes tm-drop { from { opacity: 0; transform: translateY(-70px); } to { opacity: 1; transform: none; } }
+@keyframes tm-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tm-bump { 0% { transform: none; } 35% { transform: translateY(-6px); } 100% { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-flow { animation: none; }
+  .tm-enter, .tm-shadow { opacity: 1; animation: none !important; }
+  .tm-lift, .tm-label, .tm-shadow-inner, .tm-scene, .tm-grid-layer { transition: none; }
+}
+
+@keyframes spotlight-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}

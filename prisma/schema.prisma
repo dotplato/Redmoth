@@ -1,0 +1,291 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+}
+
+enum ToolStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  REJECTED
+}
+
+enum Pricing {
+  FREE
+  FREEMIUM
+  FREE_TRIAL
+  PAID
+  CONTACT
+}
+
+enum EventType {
+  IMPRESSION
+  DETAIL_VIEW
+  OUTBOUND_CLICK
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Creator {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  bio       String
+  website   String?
+  avatarUrl String?
+  // Set only for creators who signed up; admin-created creators have no login.
+  email        String?  @unique
+  passwordHash String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tools     Tool[] @relation("MadeTools")
+  submitted Tool[] @relation("SubmittedTools")
+  saved     SavedTool[]
+  flows      Flow[]
+  savedFlows SavedFlow[]
+  toolReviews ToolReview[]
+  flowReviews FlowReview[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  tools     Tool[]
+  flows     Flow[]
+}
+
+model Tool {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  tagline     String
+  description String
+  body        String
+  websiteUrl  String
+  logoUrl     String?
+  status      ToolStatus @default(DRAFT)
+  featured    Boolean    @default(false)
+  pricing     Pricing    @default(PAID)
+  // Full paragraph (kept for search/compare/legacy) plus the four structured steps it's built from.
+  exampleScenario    String?
+  scenarioUser       String?
+  scenarioProblem    String?
+  scenarioHow        String?
+  scenarioResult     String?
+  releaseDate        DateTime?
+  // Comma-separated search terms (meta keywords, site search, AI search).
+  seoKeywords        String?
+  affiliateProgram   Boolean @default(false)
+  // Maker's affiliate program signup page, as submitted.
+  affiliateSignupUrl String?
+  // Our own affiliate link, set by an admin; the Visit button uses it when present.
+  affiliateLink      String?
+  // Present when the listing came from the public submit form.
+  submitterEmail     String?
+  // The creator account that submitted the listing (may differ from the maker in `creator`).
+  submittedById      String?
+  submittedBy        Creator?  @relation("SubmittedTools", fields: [submittedById], references: [id], onDelete: SetNull)
+  submittedAt        DateTime?
+  // Admin review of a public submission: the feedback emailed to the submitter, and when it was decided.
+  reviewNote         String?
+  reviewedAt         DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  creatorId   String
+  categoryId  String
+  creator     Creator    @relation("MadeTools", fields: [creatorId], references: [id], onDelete: Restrict)
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  screenshots Screenshot[]
+  events      Event[]
+  savedBy     SavedTool[]
+  heroSlot    HeroSlot?
+  flowStacks  FlowTool[]
+  flowSteps   FlowStep[]
+  reviews     ToolReview[]
+  notifications AdminNotification[]
+
+  @@index([status, featured])
+  @@index([pricing])
+  @@index([categoryId])
+  @@index([creatorId])
+}
+
+model Screenshot {
+  id        String   @id @default(cuid())
+  toolId    String
+  imageUrl  String
+  alt       String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@index([toolId, sortOrder])
+}
+
+model Event {
+  id        String    @id @default(cuid())
+  type      EventType
+  toolId    String
+  createdAt DateTime  @default(now())
+  tool      Tool      @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@index([toolId, type, createdAt])
+  @@index([createdAt])
+}
+
+// A creator account's saved-apps collection.
+model SavedTool {
+  creatorId String
+  toolId    String
+  createdAt DateTime @default(now())
+  creator   Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@id([creatorId, toolId])
+  @@index([creatorId, createdAt])
+}
+
+// Admin-curated tiles for the home hero network (positions 0–13). Empty when the hero is automatic.
+model HeroSlot {
+  position Int    @id
+  toolId   String @unique
+  tool     Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+}
+
+// In-app inbox for admins (e.g. a new public submission waiting for review).
+model AdminNotification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  body      String
+  toolId    String?
+  tool      Tool?    @relation(fields: [toolId], references: [id], onDelete: SetNull)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
+}
+
+// Every email the platform tries to send, kept as an outbox/audit log.
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  body      String
+  status    String   // SENT | SKIPPED (no email provider configured) | FAILED
+  error     String?
+  toolId    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// A user-made workflow ("Flow"): a stack of apps plus ordered steps. Published immediately, no review.
+model Flow {
+  id         String   @id @default(cuid())
+  title      String
+  slug       String   @unique
+  summary    String
+  logoUrl    String?
+  featured   Boolean  @default(false)
+  // Detail-page opens, shown on cards as "N users visited".
+  visits     Int      @default(0)
+  authorId   String
+  categoryId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  author     Creator  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  stack      FlowTool[]
+  steps      FlowStep[]
+  savedBy    SavedFlow[]
+  reviews    FlowReview[]
+
+  @@index([featured])
+  @@index([categoryId])
+  @@index([authorId])
+}
+
+model FlowTool {
+  flowId   String
+  toolId   String
+  position Int
+  flow     Flow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  tool     Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@id([flowId, toolId])
+  @@index([toolId])
+}
+
+model FlowStep {
+  id          String @id @default(cuid())
+  flowId      String
+  toolId      String
+  position    Int
+  title       String
+  description String
+  flow        Flow @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  tool        Tool @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@index([flowId, position])
+  @@index([toolId])
+}
+
+model SavedFlow {
+  creatorId String
+  flowId    String
+  createdAt DateTime @default(now())
+  creator   Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  flow      Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  @@id([creatorId, flowId])
+  @@index([creatorId, createdAt])
+}
+
+// Star ratings (1–5) with an optional comment; one per account per tool/flow. Feed the ranking score.
+model ToolReview {
+  id        String   @id @default(cuid())
+  rating    Int
+  body      String?
+  creatorId String
+  toolId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  creator   Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@unique([creatorId, toolId])
+  @@index([toolId, createdAt])
+}
+
+model FlowReview {
+  id        String   @id @default(cuid())
+  rating    Int
+  body      String?
+  creatorId String
+  flowId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  creator   Creator  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  flow      Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  @@unique([creatorId, flowId])
+  @@index([flowId, createdAt])
+}
