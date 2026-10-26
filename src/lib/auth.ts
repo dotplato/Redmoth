@@ -12,6 +12,8 @@ import { prisma } from "./prisma";
 import { SITE_NAME, siteUrl } from "./seo";
 
 export const ADMIN_ROLE = "admin";
+// Error code for a non-admin signing in on the admin domain (the admin login page checks for it).
+export const NOT_ADMIN_CODE = "NOT_ADMIN";
 
 const LINK_TTL_SECONDS = 60 * 60; // verification and reset links
 
@@ -88,7 +90,7 @@ export const auth = betterAuth({
           const host = context?.request?.headers.get("host") ?? context?.headers?.get("host") ?? null;
           if (!isAdminHost(host)) return;
           const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { role: true } });
-          if (user?.role !== ADMIN_ROLE) throw new APIError("FORBIDDEN", { message: "This account can't sign in here." });
+          if (user?.role !== ADMIN_ROLE) throw new APIError("FORBIDDEN", { code: NOT_ADMIN_CODE, message: "This account can't sign in here." });
         },
       },
     },

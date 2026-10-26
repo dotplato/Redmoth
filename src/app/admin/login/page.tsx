@@ -20,8 +20,8 @@ export default function AdminLoginPage() {
     });
     if (error) {
       setLoading(false);
-      // FORBIDDEN: a valid non-admin account (blocked by the session hook in src/lib/auth.ts).
-      setError(error.status === 403 ? "This account doesn't have admin access." : authErrorMessage(error));
+      // NOT_ADMIN: a valid non-admin account (blocked by the session hook in src/lib/auth.ts).
+      setError(error.code === "NOT_ADMIN" ? "This account doesn't have admin access." : authErrorMessage(error));
       return;
     }
     router.replace("/admin");
