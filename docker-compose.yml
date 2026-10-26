@@ -1,3 +1,5 @@
+# Local development: `docker compose up`. Postgres + the Next.js dev server with hot reload.
+# Uploads go to the real R2 bucket configured in .env.
 services:
   db:
     image: postgres:16-alpine
@@ -8,7 +10,8 @@ services:
       POSTGRES_PASSWORD: redmoth
       POSTGRES_DB: redmoth
     ports:
-      - "5432:5432"
+      # Host port; set POSTGRES_PORT if 5432 is taken by another Postgres.
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - redmoth_pg:/var/lib/postgresql/data
     healthcheck:
@@ -16,6 +19,28 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: redmoth-app
+    env_file: .env
+    environment:
+      # Inside the compose network the database is `db`, not localhost.
+      DATABASE_URL: postgresql://redmoth:redmoth@db:5432/redmoth
+      DIRECT_URL: postgresql://redmoth:redmoth@db:5432/redmoth
+    ports:
+      # Host port; set APP_PORT if 3000 is taken.
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      - .:/app
+      # Keep the image's node_modules and a container-owned build cache instead of the host's.
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   redmoth_pg:

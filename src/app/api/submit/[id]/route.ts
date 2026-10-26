@@ -1,8 +1,7 @@
-import { unlink } from "fs/promises";
-import path from "path";
 import { NextResponse } from "next/server";
 import { getCurrentCreator } from "@/lib/creator-auth";
 import { prisma } from "@/lib/prisma";
+import { deleteByUrl } from "@/lib/storage";
 import { readSubmission, resolveMaker, submissionFields } from "@/lib/submission";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -63,12 +62,8 @@ export async function PATCH(request: Request, { params }: Ctx) {
     }),
   ]);
 
-  // Remove files for screenshots the maker deleted (only ever inside public/uploads).
-  const uploads = path.join(process.cwd(), "public", "uploads");
-  for (const shot of removed) {
-    const file = path.join(process.cwd(), "public", shot.imageUrl);
-    if (shot.imageUrl.startsWith("/uploads/") && file.startsWith(uploads + path.sep)) await unlink(file).catch(() => {});
-  }
+  // Remove files for screenshots the maker deleted (only ever from our own bucket).
+  await Promise.all(removed.map((shot) => deleteByUrl(shot.imageUrl)));
 
   return NextResponse.json({ tool: { id, slug: tool.slug, name: data.name } });
 }

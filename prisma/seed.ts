@@ -1,5 +1,3 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
 
@@ -34,10 +32,9 @@ function logo(letter: string, color: string) {
 </svg>`;
 }
 
-async function writePublic(rel: string, contents: string) {
-  const full = path.join(process.cwd(), "public", rel);
-  await mkdir(path.dirname(full), { recursive: true });
-  await writeFile(full, contents);
+// Demo images are inlined so seeding needs no file storage.
+function svgDataUrl(svg: string) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 async function main() {
@@ -172,8 +169,6 @@ async function main() {
   ];
 
   for (const item of tools) {
-    const logoPath = `uploads/logos/${item.slug}.svg`;
-    await writePublic(logoPath, logo(item.letter, item.color));
     const tool = await prisma.tool.create({
       data: {
         name: item.name,
@@ -182,7 +177,7 @@ async function main() {
         description: item.description,
         body: item.body,
         websiteUrl: item.websiteUrl,
-        logoUrl: `/${logoPath}`,
+        logoUrl: svgDataUrl(logo(item.letter, item.color)),
         status: "PUBLISHED",
         featured: item.featured,
         pricing: ({ northline: "FREEMIUM", pulsequery: "FREE_TRIAL", lumenboard: "FREE", stillframe: "PAID", forgekit: "CONTACT" } as const)[item.slug as string] ?? "PAID",
@@ -192,12 +187,10 @@ async function main() {
     });
 
     for (const [index, caption] of ["Home", "Workspace", "Export"].entries()) {
-      const shotPath = `uploads/screenshots/${item.slug}-${index + 1}.svg`;
-      await writePublic(shotPath, frame(`${item.name} · ${caption}`, item.color, item.tagline));
       await prisma.screenshot.create({
         data: {
           toolId: tool.id,
-          imageUrl: `/${shotPath}`,
+          imageUrl: svgDataUrl(frame(`${item.name} · ${caption}`, item.color, item.tagline)),
           alt: `${item.name} ${caption.toLowerCase()} screenshot`,
           sortOrder: index,
         },

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { uploadImage } from "@/lib/upload-client";
 import { ScreenshotPicker, type PickedShot } from "../forms/ScreenshotPicker";
 
 export type AiFillFields = {
@@ -80,14 +81,17 @@ export function AiFillPanel({
     form.set("name", name);
     form.set("websiteUrl", websiteUrl);
     form.set("description", description);
-    // Logo is stored on the first run; don't re-upload it when retrying with a summary.
-    if (logo && !logoUrl) form.set("logo", logo);
 
     try {
+      // Logo is stored on the first run; don't re-upload it when retrying with a summary.
+      let storedLogo = logoUrl;
+      if (logo && !storedLogo) {
+        storedLogo = await uploadImage(logo, "logos", "/api/admin/uploads");
+        setLogoUrl(storedLogo);
+      }
+
       const res = await fetch("/api/admin/ai-fill", { method: "POST", body: form });
       const json = await res.json();
-      const storedLogo: string | null = json.logoUrl ?? logoUrl;
-      if (json.logoUrl) setLogoUrl(json.logoUrl);
 
       if (!res.ok) {
         setError(json.error ?? "AI fill failed.");

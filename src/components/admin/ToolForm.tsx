@@ -7,6 +7,7 @@ import { SCENARIO_STEPS } from "@/lib/scenario";
 import { PricingSelect } from "../forms/PricingSelect";
 import { KeywordsInput } from "../forms/KeywordsInput";
 import { YesNo } from "../forms/YesNo";
+import { uploadImage } from "@/lib/upload-client";
 import { MAX_SCREENSHOTS } from "@/lib/upload-limits";
 import { ScreenshotPicker, type PickedShot } from "../forms/ScreenshotPicker";
 import { AiFillApply, AiFillPanel } from "./AiFillPanel";
@@ -174,11 +175,15 @@ export function ToolForm({
     setShotError("");
     const failed: PickedShot[] = [];
     for (const shot of pendingShots) {
-      const body = new FormData();
-      body.set("file", shot.file);
-      body.set("alt", `${values.name} screenshot`);
-      const res = await fetch(`/api/admin/tools/${toolId}/screenshots`, { method: "POST", body });
-      if (!res.ok) failed.push(shot);
+      try {
+        const body = new FormData();
+        body.set("url", await uploadImage(shot.file, "screenshots", "/api/admin/uploads"));
+        body.set("alt", `${values.name} screenshot`);
+        const res = await fetch(`/api/admin/tools/${toolId}/screenshots`, { method: "POST", body });
+        if (!res.ok) failed.push(shot);
+      } catch {
+        failed.push(shot);
+      }
     }
     setPendingShots(failed);
     if (failed.length) setShotError(`${failed.length} screenshot${failed.length === 1 ? "" : "s"} could not be uploaded.`);
@@ -238,7 +243,7 @@ export function ToolForm({
             <div className="flex items-end gap-3">
               <ToolLogo src={values.logoUrl || null} name={values.name || "?"} />
               <div className="flex-1">
-                <Field label="Logo URL" value={values.logoUrl} onChange={set("logoUrl")} placeholder="/uploads/logos/…" />
+                <Field label="Logo URL" value={values.logoUrl} onChange={set("logoUrl")} placeholder="https://…" />
               </div>
             </div>
           </Section>

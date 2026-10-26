@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { FLOW_LIMITS, type FlowStepInput } from "./flow-limits";
 import { prisma } from "./prisma";
-import { imageFiles, saveImage, UploadError } from "./uploads";
+import { UploadError, uploadedImages } from "./uploads";
 
 /** What a flow card needs: stack logos in order, step count, labels. */
 export const FLOW_CARD = {
@@ -30,10 +30,10 @@ export async function listFlows(filters?: { q?: string; category?: string; sort?
       ...(filters?.q
         ? {
             OR: [
-              { title: { contains: filters.q } },
-              { summary: { contains: filters.q } },
+              { title: { contains: filters.q, mode: "insensitive" } },
+              { summary: { contains: filters.q, mode: "insensitive" } },
               // Finding flows by an app in them ("notion") is the most common search.
-              { stack: { some: { tool: { name: { contains: filters.q } } } } },
+              { stack: { some: { tool: { name: { contains: filters.q, mode: "insensitive" } } } } },
             ],
           }
         : {}),
@@ -130,9 +130,9 @@ export async function readFlow(form: FormData, { hasLogo = false } = {}): Promis
   // Logo is optional: without one, the flow shows its stack's logos instead.
   let logoUrl: string | null | undefined = hasLogo ? undefined : null;
   if (text(form, "removeLogo") === "yes") logoUrl = null;
-  const logo = imageFiles(form, "logo")[0];
   try {
-    if (logo) logoUrl = await saveImage(logo, "logos");
+    const [uploaded] = await uploadedImages(form, "logo", "logos");
+    if (uploaded) logoUrl = uploaded;
   } catch (err) {
     if (err instanceof UploadError) {
       errors.logo = err.message;

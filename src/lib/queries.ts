@@ -26,10 +26,10 @@ export async function publishedTools(filters?: {
       ...(filters?.q
         ? {
             OR: [
-              { name: { contains: filters.q } },
-              { tagline: { contains: filters.q } },
-              { description: { contains: filters.q } },
-              { seoKeywords: { contains: filters.q } },
+              { name: { contains: filters.q, mode: "insensitive" } },
+              { tagline: { contains: filters.q, mode: "insensitive" } },
+              { description: { contains: filters.q, mode: "insensitive" } },
+              { seoKeywords: { contains: filters.q, mode: "insensitive" } },
             ],
           }
         : {}),

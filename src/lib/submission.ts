@@ -4,12 +4,12 @@ import { uniqueSlug } from "./creator-auth";
 import { prisma } from "./prisma";
 import { joinScenario } from "./scenario";
 import { MAX_SCREENSHOTS } from "./upload-limits";
-import { imageFiles, saveImage, UploadError } from "./uploads";
+import { UploadError, uploadedImages } from "./uploads";
 
 type Parsed = Extract<ReturnType<typeof submissionPayload.safeParse>, { success: true }>["data"];
 
 /**
- * Validates a submit-form post and stores its uploads. Shared by new submissions and resubmissions.
+ * Validates a submit-form post and its already-uploaded images. Shared by new submissions and resubmissions.
  * `existingLogo`/`keptScreenshots` let an edit keep files it already has instead of re-uploading them.
  */
 export async function readSubmission(
@@ -20,8 +20,9 @@ export async function readSubmission(
 
   const raw = Object.fromEntries([...form.entries()].filter(([, value]) => typeof value === "string")) as Record<string, string>;
   const parsed = submissionPayload.safeParse(raw);
-  const logo = imageFiles(form, "logo")[0];
-  const shots = imageFiles(form, "screenshots");
+  // The browser uploads files to R2 first and posts their URLs under the same field names.
+  const logo = form.getAll("logo").find((value) => typeof value === "string" && value);
+  const shots = form.getAll("screenshots").filter((value) => typeof value === "string" && value);
   const totalShots = keptScreenshots + shots.length;
 
   // Collect every problem in one pass so the form can show them all at once.
@@ -36,15 +37,15 @@ export async function readSubmission(
   if (!category) return fail({ categoryId: "Pick a category" });
 
   let logoUrl = data.logoUrl;
-  const screenshotUrls: string[] = [];
+  let screenshotUrls: string[];
   try {
-    if (logo) logoUrl = await saveImage(logo, "logos");
+    if (logo) [logoUrl] = await uploadedImages(form, "logo", "logos");
   } catch (err) {
     if (err instanceof UploadError) return fail({ logo: err.message });
     throw err;
   }
   try {
-    for (const shot of shots) screenshotUrls.push(await saveImage(shot, "screenshots"));
+    screenshotUrls = await uploadedImages(form, "screenshots", "screenshots");
   } catch (err) {
     if (err instanceof UploadError) return fail({ screenshots: err.message });
     throw err;

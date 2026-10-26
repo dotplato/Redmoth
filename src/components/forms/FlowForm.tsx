@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FlowMark, StackRow } from "../FlowMark";
 import { ToolLogo } from "../ToolLogo";
 import { FLOW_LIMITS } from "@/lib/flow-limits";
+import { uploadFormFiles } from "@/lib/upload-client";
 
 export type PickableApp = { id: string; name: string; tagline: string; logoUrl: string | null; category: string };
 
@@ -115,6 +116,13 @@ export function FlowForm({
     body.set("stack", JSON.stringify(stack));
     body.set("steps", JSON.stringify(steps.map(({ toolId, title, description }) => ({ toolId, title, description }))));
     if (removeLogo) body.set("removeLogo", "yes");
+    try {
+      await uploadFormFiles(body, { logo: "logos" });
+    } catch (err) {
+      setSaving(false);
+      setErrors({ logo: err instanceof Error ? err.message : "Could not upload the icon." });
+      return;
+    }
     const res = await fetch(existing ? `/api/flows/${existing.id}` : "/api/flows", { method: existing ? "PATCH" : "POST", body });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {

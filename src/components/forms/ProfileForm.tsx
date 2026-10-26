@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { uploadFormFiles } from "@/lib/upload-client";
 import { ToolLogo } from "../ToolLogo";
 
 export function ProfileForm({
@@ -20,7 +21,15 @@ export function ProfileForm({
     setSaving(true);
     setSaved(false);
     setErrors({});
-    const res = await fetch("/api/creator/profile", { method: "PATCH", body: new FormData(event.currentTarget) });
+    const body = new FormData(event.currentTarget);
+    try {
+      await uploadFormFiles(body, { avatar: "avatars" });
+    } catch (err) {
+      setSaving(false);
+      setErrors({ avatar: err instanceof Error ? err.message : "Could not upload the image." });
+      return;
+    }
+    const res = await fetch("/api/creator/profile", { method: "PATCH", body });
     const json = await res.json().catch(() => ({}));
     setSaving(false);
     if (!res.ok) {

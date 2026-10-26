@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { creatorProfilePayload, fieldErrors } from "@/lib/admin-schema";
 import { getCurrentCreator } from "@/lib/creator-auth";
 import { prisma } from "@/lib/prisma";
-import { imageFiles, saveImage, UploadError } from "@/lib/uploads";
+import { UploadError, uploadedImages } from "@/lib/uploads";
 
 export async function PATCH(request: Request) {
   const creator = await getCurrentCreator();
@@ -19,14 +19,12 @@ export async function PATCH(request: Request) {
   }
 
   let avatarUrl = creator.avatarUrl;
-  const avatar = imageFiles(form, "avatar")[0];
-  if (avatar) {
-    try {
-      avatarUrl = await saveImage(avatar, "avatars");
-    } catch (err) {
-      if (err instanceof UploadError) return NextResponse.json({ errors: { avatar: err.message } }, { status: 400 });
-      throw err;
-    }
+  try {
+    const [uploaded] = await uploadedImages(form, "avatar", "avatars");
+    if (uploaded) avatarUrl = uploaded;
+  } catch (err) {
+    if (err instanceof UploadError) return NextResponse.json({ errors: { avatar: err.message } }, { status: 400 });
+    throw err;
   }
 
   const updated = await prisma.creator.update({

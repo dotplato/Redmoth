@@ -1,8 +1,7 @@
-import { unlink } from "fs/promises";
-import path from "path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
+import { deleteByUrl } from "@/lib/storage";
 
 export async function DELETE(
   request: Request,
@@ -13,11 +12,7 @@ export async function DELETE(
   const { id } = await params;
   const shot = await prisma.screenshot.delete({ where: { id } });
 
-  // Remove the image file too, but only ever from inside public/uploads.
-  if (shot.imageUrl.startsWith("/uploads/")) {
-    const uploads = path.join(process.cwd(), "public", "uploads");
-    const file = path.join(process.cwd(), "public", shot.imageUrl);
-    if (file.startsWith(uploads + path.sep)) await unlink(file).catch(() => {});
-  }
+  // Remove the image file too, but only ever from our own bucket.
+  await deleteByUrl(shot.imageUrl);
   return NextResponse.json({ ok: true });
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useRef, useState } from "react";
 import { scoreListing, type ListingInputs } from "@/lib/listing-score";
 import { SCENARIO_STEPS, type ScenarioKey } from "@/lib/scenario";
+import { UploadFailed, uploadFormFiles } from "@/lib/upload-client";
 import { MAX_SCREENSHOTS } from "@/lib/upload-limits";
 import { KeywordsInput } from "./KeywordsInput";
 import { PricingSelect } from "./PricingSelect";
@@ -153,6 +154,15 @@ export function SubmitToolForm({
     const body = new FormData(formEl);
     for (const shot of shots) body.append("screenshots", shot.file);
     for (const shot of kept) body.append("keepScreenshot", shot.id);
+    try {
+      await uploadFormFiles(body, { logo: "logos", screenshots: "screenshots" });
+    } catch (err) {
+      setSubmitting(false);
+      const next = err instanceof UploadFailed ? { [err.field]: err.message } : { form: "Could not upload your images. Please try again." };
+      setErrors(next);
+      focusFirstError(next);
+      return;
+    }
     const res = await fetch(existing ? `/api/submit/${existing.id}` : "/api/submit", { method: existing ? "PATCH" : "POST", body });
     const json = await res.json().catch(() => ({}));
     setSubmitting(false);
