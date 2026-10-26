@@ -28,8 +28,14 @@ const SECTIONS = [
 const LATEST = 24;
 
 export default async function DiscoverPage() {
-  const session = await getCreatorSession();
-  const [tools, flows, suggested] = await Promise.all([rankedTools(), rankedFlows(), suggestedFlows(session?.sub ?? null)]);
+  // Only the suggestions depend on who's viewing; the rankings start loading right away.
+  const sessionLoad = getCreatorSession();
+  const [session, tools, flows, suggested] = await Promise.all([
+    sessionLoad,
+    rankedTools(),
+    rankedFlows(),
+    sessionLoad.then((viewer) => suggestedFlows(viewer?.sub ?? null)),
+  ]);
   const personal = suggested.some((flow) => flow.reason?.endsWith("which you saved"));
 
   // Spotlight: admin-featured tools first, topped up with the best-ranked ones.

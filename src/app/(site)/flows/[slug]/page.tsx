@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 import { DeleteFlowButton } from "@/components/DeleteFlowButton";
 import { JsonLd } from "@/components/JsonLd";
 import { FlowCard } from "@/components/FlowCard";
@@ -49,19 +50,23 @@ export default async function FlowPage({
   const flow = await getFlowBySlug(slug);
   if (!flow) notFound();
 
-  const session = await getCreatorSession();
+  // Everything below only needs the flow, so it loads in parallel (reviews also wait for the viewer).
+  const sessionLoad = getCreatorSession();
+  const [session, reviews, more] = await Promise.all([
+    sessionLoad,
+    sessionLoad.then((viewer) => loadReviews("flow", flow.id, viewer?.sub ?? null)),
+    prisma.flow.findMany({
+      where: { id: { not: flow.id }, categoryId: flow.categoryId },
+      include: FLOW_CARD,
+      orderBy: [{ featured: "desc" }, { visits: "desc" }],
+      take: 3,
+    }),
+  ]);
   const isAuthor = session?.sub === flow.authorId;
-  // Count real visitors, not the author checking their own flow.
-  if (!isAuthor) await prisma.flow.update({ where: { id: flow.id }, data: { visits: { increment: 1 } } });
+  // Count real visitors, not the author checking their own flow. Written after the response is sent.
+  if (!isAuthor) after(() => prisma.flow.update({ where: { id: flow.id }, data: { visits: { increment: 1 } } }));
 
-  const reviews = await loadReviews("flow", flow.id, session?.sub ?? null);
   const stack = flow.stack.filter((item) => item.tool.status === "PUBLISHED").map((item) => item.tool);
-  const more = await prisma.flow.findMany({
-    where: { id: { not: flow.id }, categoryId: flow.categoryId },
-    include: FLOW_CARD,
-    orderBy: [{ featured: "desc" }, { visits: "desc" }],
-    take: 3,
-  });
 
   const jsonLd = {
     "@context": "https://schema.org",

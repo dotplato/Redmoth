@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouterTransition } from "@/lib/use-router-transition";
 import { ToolLogo } from "../ToolLogo";
 import { SCENARIO_STEPS } from "@/lib/scenario";
 import { PricingSelect } from "../forms/PricingSelect";
@@ -9,6 +9,7 @@ import { KeywordsInput } from "../forms/KeywordsInput";
 import { YesNo } from "../forms/YesNo";
 import { uploadImage } from "@/lib/upload-client";
 import { MAX_SCREENSHOTS } from "@/lib/upload-limits";
+import { Spinner } from "../Spinner";
 import { ScreenshotPicker, type PickedShot } from "../forms/ScreenshotPicker";
 import { AiFillApply, AiFillPanel } from "./AiFillPanel";
 
@@ -64,13 +65,23 @@ export function ToolForm({
   creators: Option[];
   categories: Option[];
 }) {
-  const router = useRouter();
+  const router = useRouterTransition();
   const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
+  // One action at a time; each stays "busy" until its request is done and the page has updated.
+  const [task, setTask] = useState<{ kind: "save" | "delete" | "upload" | "remove"; id?: string } | null>(null);
+  const [requesting, setRequesting] = useState(false);
+  const active = requesting || router.pending ? task : null;
+  const saving = active?.kind === "save";
+  const deleting = active?.kind === "delete";
+  const uploading = active?.kind === "upload";
+  const removingShot = active?.kind === "remove" ? active.id : null;
+  const start = (next: NonNullable<typeof task>) => {
+    setTask(next);
+    setRequesting(true);
+  };
   const [aiOpen, setAiOpen] = useState(false);
   const [aiFilled, setAiFilled] = useState(false);
   const [pendingShots, setPendingShots] = useState<PickedShot[]>([]);
-  const [uploading, setUploading] = useState(false);
   const [shotError, setShotError] = useState("");
   const savedShots = tool?.screenshots?.length ?? 0;
   const room = Math.max(MAX_SCREENSHOTS - savedShots, 0);
@@ -125,8 +136,9 @@ export function ToolForm({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (active) return;
     setError("");
-    setSaving(true);
+    start({ kind: "save" });
     const form = new FormData(event.currentTarget);
     const payload = {
       ...values,
@@ -152,22 +164,26 @@ export function ToolForm({
           ? `Check these fields: ${fields.join(", ")}.`
           : "Could not save the tool. Is the slug already taken?",
       );
-      setSaving(false);
+      setRequesting(false);
       return;
     }
     const json = await res.json();
     await uploadPending(json.tool.id);
-    setSaving(false);
+    setRequesting(false);
     setAiFilled(false);
     router.push(`/admin/tools/${json.tool.id}`);
-    router.refresh();
   }
 
   async function onDelete() {
-    if (!tool?.id || !confirm(`Delete ${tool.name}? This also removes its screenshots and analytics.`)) return;
-    await fetch(`/api/admin/tools/${tool.id}`, { method: "DELETE" });
+    if (active || !tool?.id || !confirm(`Delete ${tool.name}? This also removes its screenshots and analytics.`)) return;
+    start({ kind: "delete" });
+    const res = await fetch(`/api/admin/tools/${tool.id}`, { method: "DELETE" });
+    setRequesting(false);
+    if (!res.ok) {
+      setError("Could not delete the tool. Please try again.");
+      return;
+    }
     router.push("/admin/tools");
-    router.refresh();
   }
 
   /** Uploads picked screenshots one by one; keeps any that fail so they can be retried. */
@@ -190,15 +206,22 @@ export function ToolForm({
   }
 
   async function uploadNow() {
-    if (!tool?.id || !pendingShots.length) return;
-    setUploading(true);
+    if (active || !tool?.id || !pendingShots.length) return;
+    start({ kind: "upload" });
     await uploadPending(tool.id);
-    setUploading(false);
+    setRequesting(false);
     router.refresh();
   }
 
   async function removeShot(id: string) {
-    await fetch(`/api/admin/screenshots/${id}`, { method: "DELETE" });
+    if (active) return;
+    start({ kind: "remove", id });
+    const res = await fetch(`/api/admin/screenshots/${id}`, { method: "DELETE" });
+    setRequesting(false);
+    if (!res.ok) {
+      setShotError("Could not remove that screenshot.");
+      return;
+    }
     router.refresh();
   }
 
@@ -388,11 +411,13 @@ export function ToolForm({
             ) : null}
             <div className="ml-auto flex items-center gap-2">
               {isEdit ? (
-                <button type="button" onClick={onDelete} className="btn btn-danger">
-                  Delete
+                <button type="button" onClick={onDelete} disabled={active !== null} className="btn btn-danger">
+                  {deleting ? <Spinner /> : null}
+                  {deleting ? "Deleting…" : "Delete"}
                 </button>
               ) : null}
-              <button disabled={saving} className="btn btn-primary">
+              <button disabled={active !== null} className="btn btn-primary">
+                {saving ? <Spinner /> : null}
                 {saving ? "Saving…" : isEdit ? "Save changes" : "Create tool"}
               </button>
             </div>
@@ -416,10 +441,13 @@ export function ToolForm({
                   <button
                     type="button"
                     onClick={() => removeShot(shot.id)}
+                    disabled={active !== null}
                     aria-label="Remove screenshot"
-                    className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-white/90 text-sm text-[var(--danger)] shadow opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100"
+                    className={`absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-white/90 text-sm text-[var(--danger)] shadow transition ${
+                      removingShot === shot.id ? "opacity-100" : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                    }`}
                   >
-                    ✕
+                    {removingShot === shot.id ? <Spinner /> : "✕"}
                   </button>
                 </li>
               ))}
@@ -434,7 +462,8 @@ export function ToolForm({
           </div>
           {pendingShots.length ? (
             isEdit ? (
-              <button type="button" onClick={uploadNow} disabled={uploading} className="btn btn-primary mt-3 w-full">
+              <button type="button" onClick={uploadNow} disabled={active !== null} className="btn btn-primary mt-3 w-full">
+                {uploading ? <Spinner /> : null}
                 {uploading ? "Uploading…" : `Upload ${pendingShots.length} now`}
               </button>
             ) : (

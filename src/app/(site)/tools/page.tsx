@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DiscoverTabs } from "@/components/DiscoverTabs";
 import { JsonLd } from "@/components/JsonLd";
+import { FilterLink, FilterNavProvider, FilterResults, FilterSearchForm } from "@/components/FilterNav";
 import { Segmented } from "@/components/Segmented";
 import { SearchIcon } from "@/components/SiteHeader";
 import { ToolCard } from "@/components/ToolCard";
@@ -83,112 +84,111 @@ export default async function ToolsPage({ searchParams }: Props) {
   };
 
   return (
-    <div>
-      <JsonLd
-        data={{
-          "@context": "https://schema.org",
-          "@type": "ItemList",
-          name: active ? `${active.name} AI tools` : "AI tools",
-          numberOfItems: tools.length,
-          itemListElement: tools.slice(0, 50).map((tool, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            url: absoluteUrl(`/tools/${tool.slug}`),
-            name: tool.name,
-          })),
-        }}
-      />
-      <section className="border-b border-[var(--line)]">
-        <div className="container-page pb-8 pt-8 sm:pt-10">
-          <DiscoverTabs current="tools" tools={total} flows={flowCount} />
-          <p className="eyebrow">Browse tools</p>
-          <h1 className="mt-3 text-5xl leading-none sm:text-6xl">
-            {active ? `${active.name} AI tools` : pricingValue ? `${pricingOption(pricingValue)?.label} AI tools` : "All AI tools"}
-            <span className="text-[var(--faint)]"> · {tools.length}</span>
-          </h1>
-          <p className="mt-4 max-w-xl text-[var(--muted)]">
-            Search by name, then narrow by category, price or sort order. Open any tool for screenshots and
-            a real-world example.
-          </p>
-
-          <form
-            action="/tools"
-            className="mt-8 flex max-w-2xl items-center gap-2 rounded-full border border-[var(--line-strong)] bg-[var(--surface)] p-1.5 pl-5 focus-within:border-[var(--ink)]"
-          >
-            <SearchIcon className="shrink-0 text-[var(--faint)]" />
-            <input
-              name="q"
-              defaultValue={q ?? ""}
-              aria-label="Search tools"
-              placeholder="Search tools"
-              className="h-10 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-[var(--faint)]"
-            />
-            {category ? <input type="hidden" name="category" value={category} /> : null}
-            {pricing ? <input type="hidden" name="pricing" value={pricing} /> : null}
-            {sort ? <input type="hidden" name="sort" value={sort} /> : null}
-            <button className="btn btn-primary">Search</button>
-          </form>
-        </div>
-
-        <div className="container-page">
-          <nav aria-label="Categories" className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-4">
-            <Link href={href({ category: undefined })} aria-current={!category ? "page" : undefined} className="chip">
-              All <span className="chip-count">{total}</span>
-            </Link>
-            {categories.map((item) => (
-              <Link
-                key={item.id}
-                href={href({ category: item.slug })}
-                aria-current={category === item.slug ? "page" : undefined}
-                className="chip"
-              >
-                {item.name}
-                <span className="chip-count">{item._count.tools}</span>
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] py-3">
-            <Segmented label="Price" options={PRICING} current={pricing} href={(value) => href({ pricing: value })} />
-            <Segmented label="Sort" options={SORTS} current={sort} href={(value) => href({ sort: value })} />
-          </div>
-        </div>
-      </section>
-
-      <section className="container-page py-10 pb-24">
-        {filtered ? (
-          <p className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
-            Showing {tools.length} {tools.length === 1 ? "tool" : "tools"}
-            {q ? (
-              <>
-                {" "}
-                for <span className="font-bold text-[var(--ink)]">“{q}”</span>
-              </>
-            ) : null}
-            <Link href={sort ? `/tools?sort=${sort}` : "/tools"} className="underline underline-offset-4 hover:text-[var(--ink)]">
-              Clear filters
-            </Link>
-          </p>
-        ) : null}
-
-        {tools.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {tools.map((tool) => (
-              <ToolCard key={tool.id} tool={tool} />
-            ))}
-          </div>
-        ) : (
-          <div className="card grid place-items-center px-6 py-20 text-center">
-            <p className="font-display text-3xl">Nothing on this shelf.</p>
-            <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
-              No tools match these filters. Try a broader search or a different price filter.
+    <FilterNavProvider>
+      <div>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: active ? `${active.name} AI tools` : "AI tools",
+            numberOfItems: tools.length,
+            itemListElement: tools.slice(0, 50).map((tool, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              url: absoluteUrl(`/tools/${tool.slug}`),
+              name: tool.name,
+            })),
+          }}
+        />
+        <section className="border-b border-[var(--line)]">
+          <div className="container-page pb-8 pt-8 sm:pt-10">
+            <DiscoverTabs current="tools" tools={total} flows={flowCount} />
+            <p className="eyebrow">Browse tools</p>
+            <h1 className="mt-3 text-5xl leading-none sm:text-6xl">
+              {active ? `${active.name} AI tools` : pricingValue ? `${pricingOption(pricingValue)?.label} AI tools` : "All AI tools"}
+              <span className="text-[var(--faint)]"> · {tools.length}</span>
+            </h1>
+            <p className="mt-4 max-w-xl text-[var(--muted)]">
+              Search by name, then narrow by category, price or sort order. Open any tool for screenshots and
+              a real-world example.
             </p>
-            <Link href="/tools" className="btn btn-primary mt-6">
-              Reset filters
-            </Link>
+
+            <FilterSearchForm
+              action="/tools"
+              buttonLabel="Search"
+              className="mt-8 flex max-w-2xl items-center gap-2 rounded-full border border-[var(--line-strong)] bg-[var(--surface)] p-1.5 pl-5 focus-within:border-[var(--ink)]"
+            >
+              <SearchIcon className="shrink-0 text-[var(--faint)]" />
+              <input
+                name="q"
+                defaultValue={q ?? ""}
+                aria-label="Search tools"
+                placeholder="Search tools"
+                className="h-10 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-[var(--faint)]"
+              />
+              {category ? <input type="hidden" name="category" value={category} /> : null}
+              {pricing ? <input type="hidden" name="pricing" value={pricing} /> : null}
+              {sort ? <input type="hidden" name="sort" value={sort} /> : null}
+            </FilterSearchForm>
           </div>
-        )}
-      </section>
-    </div>
+
+          <div className="container-page">
+            <nav aria-label="Categories" className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-4">
+              <FilterLink href={href({ category: undefined })} active={!category} param="category" className="chip">
+                All <span className="chip-count">{total}</span>
+              </FilterLink>
+              {categories.map((item) => (
+                <FilterLink key={item.id} href={href({ category: item.slug })} active={category === item.slug} param="category" className="chip">
+                  {item.name}
+                  <span className="chip-count">{item._count.tools}</span>
+                </FilterLink>
+              ))}
+            </nav>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] py-3">
+              <Segmented label="Price" param="pricing" options={PRICING} current={pricing} href={(value) => href({ pricing: value })} />
+              <Segmented label="Sort" param="sort" options={SORTS} current={sort} href={(value) => href({ sort: value })} />
+            </div>
+          </div>
+        </section>
+
+        <section className="container-page py-10 pb-24">
+          <FilterResults>
+            {filtered ? (
+              <p className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
+                Showing {tools.length} {tools.length === 1 ? "tool" : "tools"}
+                {q ? (
+                  <>
+                    {" "}
+                    for <span className="font-bold text-[var(--ink)]">“{q}”</span>
+                  </>
+                ) : null}
+                <FilterLink href={sort ? `/tools?sort=${sort}` : "/tools"} active={false} className="underline underline-offset-4 hover:text-[var(--ink)]">
+                  Clear filters
+                </FilterLink>
+              </p>
+            ) : null}
+
+            {tools.length ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {tools.map((tool) => (
+                  <ToolCard key={tool.id} tool={tool} />
+                ))}
+              </div>
+            ) : (
+              <div className="card grid place-items-center px-6 py-20 text-center">
+                <p className="font-display text-3xl">Nothing on this shelf.</p>
+                <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
+                  No tools match these filters. Try a broader search or a different price filter.
+                </p>
+                <Link href="/tools" className="btn btn-primary mt-6">
+                  Reset filters
+                </Link>
+              </div>
+            )}
+          </FilterResults>
+        </section>
+      </div>
+    </FilterNavProvider>
   );
 }

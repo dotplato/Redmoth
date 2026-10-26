@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouterTransition } from "@/lib/use-router-transition";
+import { Spinner } from "../Spinner";
 
 type Props = {
   toolId: string;
@@ -16,9 +17,12 @@ const fmt = (iso: string) => new Date(iso).toLocaleString("en", { month: "short"
 
 /** Publish / reject a public submission, with feedback emailed to the person who submitted it. */
 export function ReviewPanel({ toolId, status, submitterEmail, submittedAt, reviewedAt, reviewNote }: Props) {
-  const router = useRouter();
+  const router = useRouterTransition();
   const [feedback, setFeedback] = useState("");
-  const [busy, setBusy] = useState<"publish" | "reject" | null>(null);
+  const [sending, setSending] = useState(false);
+  const [clicked, setClicked] = useState<"publish" | "reject" | null>(null); // which button shows the spinner
+  // Busy until the decision is saved and the page shows the new status.
+  const busy = sending || router.pending ? clicked : null;
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const pending = status === "DRAFT";
@@ -30,14 +34,15 @@ export function ReviewPanel({ toolId, status, submitterEmail, submittedAt, revie
       setError("Add feedback for the maker before rejecting (at least 10 characters).");
       return;
     }
-    setBusy(decision);
+    setClicked(decision);
+    setSending(true);
     const res = await fetch(`/api/admin/tools/${toolId}/review`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ decision, feedback }),
     });
     const json = await res.json().catch(() => ({}));
-    setBusy(null);
+    setSending(false);
     if (!res.ok) {
       setError(json.error ?? "Could not save the review.");
       return;
@@ -90,9 +95,11 @@ export function ReviewPanel({ toolId, status, submitterEmail, submittedAt, revie
 
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" disabled={busy !== null} onClick={() => decide("publish")} className="btn btn-accent">
+            {busy === "publish" ? <Spinner /> : null}
             {busy === "publish" ? "Publishing…" : status === "PUBLISHED" ? "Re-send approval" : "Publish"}
           </button>
           <button type="button" disabled={busy !== null} onClick={() => decide("reject")} className="btn btn-outline !border-[var(--danger)] !text-[var(--danger)]">
+            {busy === "reject" ? <Spinner /> : null}
             {busy === "reject" ? "Rejecting…" : "Reject"}
           </button>
           <span className="text-xs text-[var(--muted)]">

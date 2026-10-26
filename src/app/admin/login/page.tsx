@@ -1,32 +1,38 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { SiteLogo } from "@/components/SiteLogo";
+import { Spinner } from "@/components/Spinner";
 import { authClient, authErrorMessage } from "@/lib/auth-client";
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [navigating, startNavigation] = useTransition();
+  // Busy until signed in and the dashboard has loaded.
+  const loading = sending || navigating;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    setLoading(true);
+    setSending(true);
     const form = new FormData(event.currentTarget);
     const { error } = await authClient.signIn.email({
       email: String(form.get("email") ?? ""),
       password: String(form.get("password") ?? ""),
     });
+    setSending(false);
     if (error) {
-      setLoading(false);
       // NOT_ADMIN: a valid non-admin account (blocked by the session hook in src/lib/auth.ts).
       setError(error.code === "NOT_ADMIN" ? "This account doesn't have admin access." : authErrorMessage(error));
       return;
     }
-    router.replace("/admin");
-    router.refresh();
+    startNavigation(() => {
+      router.replace("/admin");
+      router.refresh();
+    });
   }
 
   return (
@@ -63,6 +69,7 @@ export default function AdminLoginPage() {
               </p>
             ) : null}
             <button disabled={loading} className="btn btn-primary btn-lg mt-1 w-full">
+              {loading ? <Spinner /> : null}
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>

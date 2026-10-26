@@ -1,33 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouterTransition } from "@/lib/use-router-transition";
+import { Spinner } from "../Spinner";
 
 /** Feature toggle + delete for one row of the admin Flows table. */
 export function FlowAdminActions({ id, title, featured }: { id: string; title: string; featured: boolean }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const router = useRouterTransition();
+  const [action, setAction] = useState<"feature" | "delete" | null>(null);
+  const [saving, setSaving] = useState(false);
   const [on, setOn] = useState(featured);
+  // Busy until the request is done and the refreshed table has arrived; `action` picks the spinner.
+  const busy = saving || router.pending;
 
   async function toggle() {
-    setBusy(true);
+    const next = !on;
+    setAction("feature");
+    setOn(next); // optimistic; rolled back on failure
+    setSaving(true);
     const res = await fetch(`/api/admin/flows/${id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ featured: !on }),
+      body: JSON.stringify({ featured: next }),
     });
-    setBusy(false);
-    if (res.ok) {
-      setOn(!on);
-      router.refresh();
+    setSaving(false);
+    if (!res.ok) {
+      setOn(!next);
+      return;
     }
+    router.refresh();
   }
 
   async function remove() {
     if (!window.confirm(`Delete “${title}”? The author can't undo this.`)) return;
-    setBusy(true);
+    setAction("delete");
+    setSaving(true);
     const res = await fetch(`/api/admin/flows/${id}`, { method: "DELETE" });
-    setBusy(false);
+    setSaving(false);
     if (res.ok) router.refresh();
   }
 
@@ -42,10 +51,12 @@ export function FlowAdminActions({ id, title, featured }: { id: string; title: s
         onClick={toggle}
         className={`btn btn-sm ${on ? "btn-primary" : "btn-outline"}`}
       >
+        {busy && action === "feature" ? <Spinner /> : null}
         {on ? "★ Featured" : "☆ Feature"}
       </button>
       <button type="button" disabled={busy} onClick={remove} className="btn btn-danger btn-sm">
-        Delete
+        {busy && action === "delete" ? <Spinner /> : null}
+        {busy && action === "delete" ? "Deleting…" : "Delete"}
       </button>
     </div>
   );

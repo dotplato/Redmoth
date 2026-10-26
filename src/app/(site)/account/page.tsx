@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { StatusBadge } from "@/components/admin/PageHeader";
 import { ProfileForm } from "@/components/forms/ProfileForm";
 import { FlowMark } from "@/components/FlowMark";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { ToolLogo } from "@/components/ToolLogo";
 import { getCurrentCreator } from "@/lib/creator-auth";
 import { prisma } from "@/lib/prisma";
@@ -16,17 +17,19 @@ export default async function AccountPage() {
   const creator = await getCurrentCreator();
   if (!creator) redirect("/login");
 
-  const tools = await prisma.tool.findMany({
-    // Apps listed under this profile, plus ones this account submitted for another maker/company.
-    where: { OR: [{ creatorId: creator.id }, { submittedById: creator.id }] },
-    orderBy: { createdAt: "desc" },
-    include: { category: true },
-  });
-  const flows = await prisma.flow.findMany({
-    where: { authorId: creator.id },
-    orderBy: { createdAt: "desc" },
-    include: { category: true, stack: { orderBy: { position: "asc" }, include: { tool: { select: { name: true, logoUrl: true } } } }, _count: { select: { steps: true } } },
-  });
+  const [tools, flows] = await Promise.all([
+    prisma.tool.findMany({
+      // Apps listed under this profile, plus ones this account submitted for another maker/company.
+      where: { OR: [{ creatorId: creator.id }, { submittedById: creator.id }] },
+      orderBy: { createdAt: "desc" },
+      include: { category: true },
+    }),
+    prisma.flow.findMany({
+      where: { authorId: creator.id },
+      orderBy: { createdAt: "desc" },
+      include: { category: true, stack: { orderBy: { position: "asc" }, include: { tool: { select: { name: true, logoUrl: true } } } }, _count: { select: { steps: true } } },
+    }),
+  ]);
 
   return (
     <div className="container-page py-12 pb-24">
@@ -44,7 +47,9 @@ export default async function AccountPage() {
             View public profile
           </Link>
           <form action="/api/creator/logout" method="post">
-            <button className="btn btn-ghost">Log out</button>
+            <PendingSubmitButton pendingLabel="Logging out…" className="btn btn-ghost">
+              Log out
+            </PendingSubmitButton>
           </form>
         </div>
       </div>

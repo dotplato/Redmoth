@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { PendingSubmitButton } from "../PendingSubmitButton";
 import { SiteLogo } from "../SiteLogo";
 
 const items = [
@@ -51,9 +52,12 @@ export function AdminNav({ email, unread = 0 }: { email: string; unread?: number
         <div className="mt-auto border-t border-[var(--line)] pt-4">
           <p className="truncate px-3 text-xs text-[var(--faint)]">{email}</p>
           <form action="/api/admin/logout" method="post">
-            <button className="mt-1 flex h-9 w-full items-center rounded-lg px-3 text-sm text-[var(--muted)] hover:bg-[var(--bg-deep)] hover:text-[var(--ink)]">
+            <PendingSubmitButton
+              pendingLabel="Signing out…"
+              className="mt-1 flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm text-[var(--muted)] hover:bg-[var(--bg-deep)] hover:text-[var(--ink)]"
+            >
               Sign out
-            </button>
+            </PendingSubmitButton>
           </form>
         </div>
       </aside>
@@ -63,7 +67,9 @@ export function AdminNav({ email, unread = 0 }: { email: string; unread?: number
         <div className="flex h-14 items-center justify-between px-4">
           <Brand />
           <form action="/api/admin/logout" method="post">
-            <button className="btn btn-ghost btn-sm">Sign out</button>
+            <PendingSubmitButton pendingLabel="Signing out…" className="btn btn-ghost btn-sm">
+              Sign out
+            </PendingSubmitButton>
           </form>
         </div>
         <nav className="no-scrollbar flex gap-1 overflow-x-auto px-3 pb-2">

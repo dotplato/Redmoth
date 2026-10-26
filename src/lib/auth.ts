@@ -16,6 +16,7 @@ export const ADMIN_ROLE = "admin";
 export const NOT_ADMIN_CODE = "NOT_ADMIN";
 
 const LINK_TTL_SECONDS = 60 * 60; // verification and reset links
+const SESSION_COOKIE_CACHE_SECONDS = 5 * 60;
 
 const site = new URL(siteUrl());
 
@@ -66,6 +67,11 @@ export const auth = betterAuth({
     additionalFields: {
       role: { type: "string", defaultValue: "user", input: false },
     },
+  },
+  session: {
+    // Keep a signed copy of the session in a short-lived cookie so most requests skip the database.
+    // Trade-off: a revoked session (sign-out elsewhere, password reset) can linger up to this long.
+    cookieCache: { enabled: true, maxAge: SESSION_COOKIE_CACHE_SECONDS },
   },
   rateLimit: {
     // Database-backed so limits hold across Vercel's serverless instances.

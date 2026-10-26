@@ -18,17 +18,18 @@ export const dynamic = "force-dynamic";
 export const metadata = { alternates: { canonical: "/" } };
 
 export default async function HomePage() {
-  const [featured, tools, categories, flows] = await Promise.all([
+  const [featured, tools, categories, flows, curated] = await Promise.all([
     featuredTools(),
     publishedTools(),
     categoryChips(),
     rankedFlows(), // ranking score: visits, saves, reviews, rating, freshness
+    prisma.heroSlot.findMany({ select: { position: true, tool: { select: { name: true, slug: true, logoUrl: true, status: true } } } }),
   ]);
   const topFlows = flows.slice(0, 6);
   // Featured tools lead the spotlight; top it up with other listings so it always has a few slides.
   const spotlight = [...featured, ...tools.filter((tool) => !featured.some((f) => f.id === tool.id))].slice(0, 4);
   const rest = [...tools].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  const network = await heroNetwork(tools);
+  const network = heroNetwork(tools, curated);
 
   return (
     <div>
@@ -179,9 +180,11 @@ export default async function HomePage() {
  * Apps for the hero network, by slot. When an admin has curated slots (Admin → Hero), only those are shown
  * and the rest are "Your app here" placeholders; otherwise published apps fill the slots automatically.
  */
-async function heroNetwork(tools: { id: string; name: string; slug: string; logoUrl: string | null }[]) {
-  const toNode = (tool: { name: string; slug: string; logoUrl: string | null }) => ({ name: tool.name, slug: tool.slug, logoUrl: tool.logoUrl });
-  const curated = await prisma.heroSlot.findMany({ include: { tool: true } });
+type HeroTool = { name: string; slug: string; logoUrl: string | null };
+
+/** Admin-curated hero slots when there are any; otherwise the first listings (logos first). */
+function heroNetwork(tools: HeroTool[], curated: { position: number; tool: HeroTool & { status: string } }[]) {
+  const toNode = (tool: HeroTool) => ({ name: tool.name, slug: tool.slug, logoUrl: tool.logoUrl });
   if (curated.length) {
     const slots: (ReturnType<typeof toNode> | null)[] = Array(HERO_SLOT_COUNT).fill(null);
     for (const slot of curated) {

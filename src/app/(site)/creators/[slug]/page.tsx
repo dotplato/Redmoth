@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import { FlowCard } from "@/components/FlowCard";
 import { JsonLd } from "@/components/JsonLd";
 import { ToolCard } from "@/components/ToolCard";
@@ -15,15 +16,29 @@ import { NOINDEX, SITE_NAME, absoluteUrl, snippet } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
+/** The maker with their published tools and flows. Cached per request: page and metadata share it. */
+const getCreatorProfile = cache((slug: string) =>
+  prisma.creator.findUnique({
+    where: { slug },
+    include: {
+      tools: {
+        where: { status: "PUBLISHED" },
+        include: { category: true, ...VISITS },
+        orderBy: { name: "asc" },
+      },
+      flows: { include: FLOW_CARD, orderBy: { createdAt: "desc" } },
+    },
+  }),
+);
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const creator = await prisma.creator.findUnique({
-    where: { slug: (await params).slug },
-    include: { _count: { select: { tools: { where: { status: "PUBLISHED" } }, flows: true } } },
-  });
+  const creator = await getCreatorProfile((await params).slug);
   if (!creator) return { title: "Maker not found", ...NOINDEX };
-  const empty = !creator._count.tools && !creator._count.flows;
+  const toolCount = creator.tools.length;
+  const flowCount = creator.flows.length;
+  const empty = !toolCount && !flowCount;
   const description = snippet(
-    `${creator.bio} ${creator._count.tools} AI ${creator._count.tools === 1 ? "tool" : "tools"} and ${creator._count.flows} ${creator._count.flows === 1 ? "flow" : "flows"} by ${creator.name} on ${SITE_NAME}.`,
+    `${creator.bio} ${toolCount} AI ${toolCount === 1 ? "tool" : "tools"} and ${flowCount} ${flowCount === 1 ? "flow" : "flows"} by ${creator.name} on ${SITE_NAME}.`,
   );
   return {
     title: `${creator.name} — AI tools and flows`,
@@ -47,19 +62,9 @@ export default async function CreatorPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const creator = await prisma.creator.findUnique({
-    where: { slug },
-    include: {
-      tools: {
-        where: { status: "PUBLISHED" },
-        include: { category: true, ...VISITS },
-        orderBy: { name: "asc" },
-      },
-      flows: { include: FLOW_CARD, orderBy: { createdAt: "desc" } },
-    },
-  });
+  const [creator, session] = await Promise.all([getCreatorProfile(slug), getCreatorSession()]);
   if (!creator) notFound();
-  const isOwner = (await getCreatorSession())?.sub === creator.id;
+  const isOwner = session?.sub === creator.id;
 
   return (
     <div>

@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { FlowMark, StackRow } from "../FlowMark";
+import { Spinner } from "../Spinner";
 import { ToolLogo } from "../ToolLogo";
 import { FLOW_LIMITS } from "@/lib/flow-limits";
 import { uploadFormFiles } from "@/lib/upload-client";
@@ -135,8 +136,8 @@ export function FlowForm({
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) el.focus({ preventScroll: true });
       return;
     }
+    // Stays "Publishing…" (saving is never reset on success) until the flow page replaces this one.
     router.push(`/flows/${json.flow.slug}${existing ? "" : "?created=1"}`);
-    router.refresh();
   }
 
   const err = (key: string) => (errors[key] ? <p className="text-xs font-bold text-[var(--danger)]">{errors[key]}</p> : null);
@@ -408,6 +409,7 @@ export function FlowForm({
 
         <div className="flex flex-wrap items-center gap-4">
           <button disabled={saving} className="btn btn-accent btn-lg">
+            {saving ? <Spinner /> : null}
             {saving ? "Publishing…" : existing ? "Save changes" : "Publish Flow"}
           </button>
           <p className="text-sm text-[var(--muted)]">Flows go live right away. You can edit or delete yours any time.</p>

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-limits";
+import { Spinner } from "../Spinner";
 
 // Errors shown under a field instead of above the button.
 const FIELD_FOR_CODE: Record<string, string> = {
@@ -18,14 +19,17 @@ export function AuthForm({ mode, next = "/account" }: { mode: "signup" | "login"
   const swapHref = `${mode === "signup" ? "/login" : "/signup"}${next === "/account" ? "" : `?next=${encodeURIComponent(next)}`}`;
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [navigating, startNavigation] = useTransition();
+  // Busy until signed in and the destination page (with the logged-in header) has loaded.
+  const loading = sending || navigating;
   // Signup (or logging in unverified) ends with a verification email instead of a session.
   const [sentTo, setSentTo] = useState<string | null>(null);
   const signup = mode === "signup";
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setLoading(true);
+    setSending(true);
     setErrors({});
     const form = new FormData(event.currentTarget);
     const email = String(form.get("email") ?? "").trim();
@@ -35,13 +39,16 @@ export function AuthForm({ mode, next = "/account" }: { mode: "signup" | "login"
     const { error } = signup
       ? await authClient.signUp.email({ name: String(form.get("name") ?? "").trim(), email, password, callbackURL: next })
       : await authClient.signIn.email({ email, password, callbackURL: next });
-    setLoading(false);
+    setSending(false);
 
     if (signup && !error) return setSentTo(email);
     if (error?.code === "EMAIL_NOT_VERIFIED") return setSentTo(email);
     if (error) return setErrors({ [FIELD_FOR_CODE[error.code ?? ""] ?? "form"]: authErrorMessage(error) });
-    router.replace(next);
-    router.refresh();
+    // Refresh too, so the shared layout (header, saved list) picks up the new session.
+    startNavigation(() => {
+      router.replace(next);
+      router.refresh();
+    });
   }
 
   if (sentTo) {
@@ -123,6 +130,7 @@ export function AuthForm({ mode, next = "/account" }: { mode: "signup" | "login"
           </p>
         ) : null}
         <button disabled={loading} className="btn btn-primary btn-lg mt-1 w-full">
+          {loading ? <Spinner /> : null}
           {loading ? "One moment…" : signup ? "Create account" : "Log in"}
         </button>
       </form>

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouterTransition } from "@/lib/use-router-transition";
+import { Spinner } from "./Spinner";
 import { STAR_PATH, Stars } from "./Stars";
 import { ToolLogo } from "./ToolLogo";
 import type { ReviewKind, ReviewView } from "@/lib/reviews";
@@ -26,41 +28,47 @@ export function ReviewSection({
   signedIn: boolean;
   isOwner: boolean;
 }) {
-  const router = useRouter();
+  const router = useRouterTransition();
   const pathname = usePathname();
   const [editing, setEditing] = useState(!data.mine);
   const [rating, setRating] = useState(data.mine?.rating ?? 0);
   const [hover, setHover] = useState(0);
   const [body, setBody] = useState(data.mine?.body ?? "");
-  const [busy, setBusy] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [method, setMethod] = useState<"POST" | "DELETE">("POST"); // which button shows the spinner
+  // Busy until the request is done and the page shows the updated reviews.
+  const busy = sending || router.pending;
   const [error, setError] = useState("");
   const [shown, setShown] = useState(PAGE);
   const others = data.reviews.filter((review) => !review.mine);
 
-  async function send(method: "POST" | "DELETE") {
-    if (method === "POST" && !rating) {
+  async function send(nextMethod: "POST" | "DELETE") {
+    if (nextMethod === "POST" && !rating) {
       setError("Pick a star rating first.");
       return;
     }
-    setBusy(true);
+    setSending(true);
+    setMethod(nextMethod);
     setError("");
     const res = await fetch("/api/reviews", {
-      method,
+      method: nextMethod,
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ kind, id, rating, body }),
     });
     const json = await res.json().catch(() => ({}));
-    setBusy(false);
+    setSending(false);
     if (!res.ok) {
       setError(json.error ?? "Something went wrong. Please try again.");
       return;
     }
-    if (method === "DELETE") {
-      setRating(0);
-      setBody("");
-      setEditing(true);
-    } else setEditing(false);
-    router.refresh();
+    // Switch views together with the refreshed reviews, not before them.
+    router.refresh(() => {
+      if (nextMethod === "DELETE") {
+        setRating(0);
+        setBody("");
+        setEditing(true);
+      } else setEditing(false);
+    });
   }
 
   const live = hover || rating;
@@ -166,7 +174,8 @@ export function ReviewSection({
             ) : null}
             <div className="flex flex-wrap gap-2">
               <button disabled={busy} className="btn btn-primary btn-sm">
-                {busy ? "Saving…" : data.mine ? "Update review" : "Post review"}
+                {busy && method === "POST" ? <Spinner /> : null}
+                {busy && method === "POST" ? "Saving…" : data.mine ? "Update review" : "Post review"}
               </button>
               {data.mine ? (
                 <button type="button" onClick={() => setEditing(false)} className="btn btn-ghost btn-sm">
@@ -182,7 +191,8 @@ export function ReviewSection({
                 Edit
               </button>
               <button type="button" disabled={busy} onClick={() => send("DELETE")} className="btn btn-ghost btn-sm text-[var(--danger)]">
-                Delete
+                {busy && method === "DELETE" ? <Spinner /> : null}
+                {busy && method === "DELETE" ? "Deleting…" : "Delete"}
               </button>
             </div>
             {error ? <p className="mt-2 text-sm font-bold text-[var(--danger)]">{error}</p> : null}

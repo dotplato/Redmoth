@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { hostname } from "@/lib/format";
 import { slugify } from "@/lib/slug";
 import { ToolLogo } from "../ToolLogo";
+import { Spinner } from "../Spinner";
 import { EmptyRow } from "./PageHeader";
 
 type Creator = {
@@ -23,10 +24,21 @@ export function CreatorManager({ creators }: { creators: Creator[] }) {
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [error, setError] = useState("");
+  // Busy until the request is done and the refreshed list has arrived; `action` labels the button.
+  const [action, setAction] = useState<{ type: "add" } | { type: "remove"; id: string } | null>(null);
+  const [fetching, setFetching] = useState(false);
+  const [refreshing, startRefresh] = useTransition();
+  const busy = fetching || refreshing;
+  const adding = busy && action?.type === "add";
+  const removingId = busy && action?.type === "remove" ? action.id : null;
+  const refresh = () => startRefresh(() => router.refresh());
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy) return;
     setError("");
+    setAction({ type: "add" });
+    setFetching(true);
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
     const res = await fetch("/api/admin/creators", {
@@ -35,6 +47,7 @@ export function CreatorManager({ creators }: { creators: Creator[] }) {
       body: JSON.stringify({ ...data, name, slug: slug || slugify(name) }),
     });
     if (!res.ok) {
+      setFetching(false);
       setError("Could not add creator. Check the website URL and that the bio is at least 8 characters.");
       return;
     }
@@ -42,19 +55,25 @@ export function CreatorManager({ creators }: { creators: Creator[] }) {
     setName("");
     setSlug("");
     setSlugTouched(false);
-    router.refresh();
+    setFetching(false);
+    refresh();
   }
 
   async function remove(creator: Creator) {
     setError("");
+    if (busy) return;
     if (!confirm(`Remove ${creator.name}?`)) return;
+    setAction({ type: "remove", id: creator.id });
+    setFetching(true);
     const res = await fetch(`/api/admin/creators/${creator.id}`, { method: "DELETE" });
     if (!res.ok) {
+      setFetching(false);
       const json = await res.json().catch(() => null);
       setError(json?.error ?? "Could not remove creator.");
       return;
     }
-    router.refresh();
+    setFetching(false);
+    refresh();
   }
 
   return (
@@ -76,8 +95,9 @@ export function CreatorManager({ creators }: { creators: Creator[] }) {
                     {creator.website ? ` · ${hostname(creator.website)}` : ""}
                   </p>
                 </div>
-                <button onClick={() => remove(creator)} className="btn btn-danger btn-sm">
-                  Remove
+                <button onClick={() => remove(creator)} disabled={busy} className="btn btn-danger btn-sm">
+                  {removingId === creator.id ? <Spinner /> : null}
+                  {removingId === creator.id ? "Removing…" : "Remove"}
                 </button>
               </li>
             ))}
@@ -126,7 +146,10 @@ export function CreatorManager({ creators }: { creators: Creator[] }) {
           <textarea name="bio" required minLength={8} placeholder="One or two sentences about the maker." className="input" />
         </label>
         {error ? <p role="alert" className="text-sm text-[var(--danger)]">{error}</p> : null}
-        <button className="btn btn-primary">Add creator</button>
+        <button disabled={busy} className="btn btn-primary">
+          {adding ? <Spinner /> : null}
+          {adding ? "Adding…" : "Add creator"}
+        </button>
       </form>
     </div>
   );

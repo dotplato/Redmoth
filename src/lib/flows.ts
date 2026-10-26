@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cache } from "react";
 import { FLOW_LIMITS, type FlowStepInput } from "./flow-limits";
 import { prisma } from "./prisma";
 import { UploadError, uploadedImages } from "./uploads";
@@ -47,7 +48,8 @@ export async function flowCategoriesWithCounts() {
   return prisma.category.findMany({ include: { _count: { select: { flows: true } } }, orderBy: { name: "asc" } });
 }
 
-export async function getFlowBySlug(slug: string) {
+/** Cached per request: the page and its generateMetadata share one query. */
+export const getFlowBySlug = cache(async (slug: string) => {
   return prisma.flow.findUnique({
     where: { slug },
     include: {
@@ -57,7 +59,7 @@ export async function getFlowBySlug(slug: string) {
       steps: { orderBy: { position: "asc" }, include: { tool: { select: { id: true, name: true, slug: true, logoUrl: true, status: true } } } },
     },
   });
-}
+});
 
 type Parsed = {
   title: string;

@@ -16,7 +16,7 @@ import { getCreatorSession } from "@/lib/creator-auth";
 import { hostname } from "@/lib/format";
 import { parseKeywords } from "@/lib/keywords";
 import { pricingOption } from "@/lib/pricing";
-import { getToolBySlug, publishedTools } from "@/lib/queries";
+import { getToolBySlug, similarTools } from "@/lib/queries";
 import { rankedFlows } from "@/lib/ranking";
 import { loadReviews } from "@/lib/reviews";
 import { NOINDEX, absoluteUrl, breadcrumbs, pricingOffer, snippet } from "@/lib/seo";
@@ -95,21 +95,18 @@ export default async function ToolPage({
   const tool = await getToolBySlug(slug);
   if (!tool) notFound();
 
-  await track(tool.id, "DETAIL_VIEW");
-  const session = await getCreatorSession();
-  const viewerId = session?.sub ?? null;
-  const [flows, reviews] = await Promise.all([
+  track(tool.id, "DETAIL_VIEW");
+  // Everything below only needs the tool, so it loads in parallel (reviews also wait for the viewer).
+  const sessionLoad = getCreatorSession();
+  const [session, flows, reviews, similar] = await Promise.all([
+    sessionLoad,
     // Best-ranked flows that have this app in their stack.
     rankedFlows({ stack: { some: { toolId: tool.id } } }),
-    loadReviews("tool", tool.id, viewerId),
+    sessionLoad.then((viewer) => loadReviews("tool", tool.id, viewer?.sub ?? null)),
+    // Same category first, then the rest of the catalog, so there is always something to compare with.
+    similarTools(tool, SIMILAR_LIMIT),
   ]);
-
-  // Same category first, then the rest of the catalog, so there is always something to compare with.
-  const others = (await publishedTools()).filter((item) => item.id !== tool.id);
-  const similar = [
-    ...others.filter((item) => item.categoryId === tool.categoryId),
-    ...others.filter((item) => item.categoryId !== tool.categoryId),
-  ].slice(0, SIMILAR_LIMIT);
+  const viewerId = session?.sub ?? null;
 
   return (
     <div>

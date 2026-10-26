@@ -6,12 +6,13 @@ import { prisma } from "@/lib/prisma";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const session = await getCreatorSession();
-  const saved = session
-    ? [
-        ...(await prisma.savedTool.findMany({ where: { creatorId: session.sub }, select: { toolId: true } })).map((row) => row.toolId),
-        ...(await prisma.savedFlow.findMany({ where: { creatorId: session.sub }, select: { flowId: true } })).map((row) => row.flowId),
-      ]
-    : [];
+  const [savedTools, savedFlows] = session
+    ? await Promise.all([
+        prisma.savedTool.findMany({ where: { creatorId: session.sub }, select: { toolId: true } }),
+        prisma.savedFlow.findMany({ where: { creatorId: session.sub }, select: { flowId: true } }),
+      ])
+    : [[], []];
+  const saved = [...savedTools.map((row) => row.toolId), ...savedFlows.map((row) => row.flowId)];
 
   return (
     // Keyed by account so logging in/out starts from that account's saved list.

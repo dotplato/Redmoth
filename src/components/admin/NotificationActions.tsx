@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouterTransition } from "@/lib/use-router-transition";
+import { Spinner } from "../Spinner";
 
 async function mark(body: object) {
   await fetch("/api/admin/notifications", {
@@ -11,37 +12,34 @@ async function mark(body: object) {
   });
 }
 
+/** Marks notifications read/unread; busy until the refreshed inbox has loaded. */
+function useMark() {
+  const router = useRouterTransition();
+  const [saving, setSaving] = useState(false);
+  const run = async (body: object) => {
+    setSaving(true);
+    await mark(body);
+    setSaving(false);
+    router.refresh();
+  };
+  return { busy: saving || router.pending, run };
+}
+
 export function MarkAllRead({ disabled }: { disabled: boolean }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useMark();
   return (
-    <button
-      type="button"
-      disabled={disabled || busy}
-      onClick={async () => {
-        setBusy(true);
-        await mark({ all: true });
-        setBusy(false);
-        router.refresh();
-      }}
-      className="btn btn-outline btn-sm"
-    >
+    <button type="button" disabled={disabled || busy} onClick={() => run({ all: true })} className="btn btn-outline btn-sm">
+      {busy ? <Spinner /> : null}
       Mark all read
     </button>
   );
 }
 
 export function ToggleRead({ id, read }: { id: string; read: boolean }) {
-  const router = useRouter();
+  const { busy, run } = useMark();
   return (
-    <button
-      type="button"
-      onClick={async () => {
-        await mark({ ids: [id], read: !read });
-        router.refresh();
-      }}
-      className="btn btn-ghost btn-sm"
-    >
+    <button type="button" disabled={busy} onClick={() => run({ ids: [id], read: !read })} className="btn btn-ghost btn-sm">
+      {busy ? <Spinner /> : null}
       {read ? "Mark unread" : "Mark read"}
     </button>
   );

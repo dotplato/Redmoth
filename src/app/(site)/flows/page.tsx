@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DiscoverTabs } from "@/components/DiscoverTabs";
 import { FlowCard } from "@/components/FlowCard";
+import { FilterLink, FilterNavProvider, FilterResults, FilterSearchForm } from "@/components/FilterNav";
 import { Segmented } from "@/components/Segmented";
 import { SearchIcon } from "@/components/SiteHeader";
 import { flowCategoriesWithCounts, listFlows, type FlowSort } from "@/lib/flows";
@@ -62,97 +63,96 @@ export default async function FlowsPage({ searchParams }: Props) {
   };
 
   return (
-    <div>
-      <section className="border-b border-[var(--line)]">
-        <div className="container-page pb-8 pt-8 sm:pt-10">
-          <DiscoverTabs current="flows" tools={toolCount} flows={total} />
-          <p className="eyebrow">Workflows from the community</p>
-          <h1 className="mt-3 text-5xl leading-none sm:text-6xl">
-            {active ? `${active.name} flows` : "Flows"}
-            <span className="text-[var(--faint)]"> · {flows.length}</span>
-          </h1>
-          <p className="mt-4 max-w-xl text-[var(--muted)]">
-            Stacks of apps that work together, step by step. Follow one as-is, or create your own and share how you work.
-          </p>
-
-          <form
-            action="/flows"
-            className="mt-8 flex max-w-2xl items-center gap-2 rounded-full border border-[var(--line-strong)] bg-[var(--surface)] p-1.5 pl-5 focus-within:border-[var(--ink)]"
-          >
-            <SearchIcon className="shrink-0 text-[var(--faint)]" />
-            <input
-              name="q"
-              defaultValue={q ?? ""}
-              aria-label="Search flows"
-              placeholder="Search flows or an app in them"
-              className="h-10 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-[var(--faint)]"
-            />
-            {category ? <input type="hidden" name="category" value={category} /> : null}
-            {sort ? <input type="hidden" name="sort" value={sort} /> : null}
-            <button className="btn btn-primary">Search</button>
-          </form>
-        </div>
-
-        <div className="container-page">
-          <nav aria-label="Categories" className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-4">
-            <Link href={href({ category: undefined })} aria-current={!category ? "page" : undefined} className="chip">
-              All <span className="chip-count">{total}</span>
-            </Link>
-            {chips.map((item) => (
-              <Link
-                key={item.id}
-                href={href({ category: item.slug })}
-                aria-current={category === item.slug ? "page" : undefined}
-                className="chip"
-              >
-                {item.name}
-                <span className="chip-count">{item._count.flows}</span>
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] py-3">
-            <Segmented label="Sort" options={SORTS} current={sort} href={(value) => href({ sort: value })} />
-          </div>
-        </div>
-      </section>
-
-      <section className="container-page py-10 pb-24">
-        {filtered ? (
-          <p className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
-            Showing {flows.length} {flows.length === 1 ? "flow" : "flows"}
-            {q ? (
-              <>
-                {" "}
-                for <span className="font-bold text-[var(--ink)]">“{q}”</span>
-              </>
-            ) : null}
-            <Link href={sort ? `/flows?sort=${sort}` : "/flows"} className="underline underline-offset-4 hover:text-[var(--ink)]">
-              Clear filters
-            </Link>
-          </p>
-        ) : null}
-
-        {flows.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {flows.map((flow) => (
-              <FlowCard key={flow.id} flow={flow} />
-            ))}
-          </div>
-        ) : (
-          <div className="card grid place-items-center px-6 py-20 text-center">
-            <p className="font-display text-3xl">{filtered ? "No flows match." : "No flows yet."}</p>
-            <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
-              {filtered
-                ? "Try a broader search or another category."
-                : "Be the first: pick a few apps, describe how you use them together, and publish it."}
+    <FilterNavProvider>
+      <div>
+        <section className="border-b border-[var(--line)]">
+          <div className="container-page pb-8 pt-8 sm:pt-10">
+            <DiscoverTabs current="flows" tools={toolCount} flows={total} />
+            <p className="eyebrow">Workflows from the community</p>
+            <h1 className="mt-3 text-5xl leading-none sm:text-6xl">
+              {active ? `${active.name} flows` : "Flows"}
+              <span className="text-[var(--faint)]"> · {flows.length}</span>
+            </h1>
+            <p className="mt-4 max-w-xl text-[var(--muted)]">
+              Stacks of apps that work together, step by step. Follow one as-is, or create your own and share how you work.
             </p>
-            <Link href={filtered ? "/flows" : "/flows/new"} className="btn btn-primary mt-6">
-              {filtered ? "Reset filters" : "Create a Flow"}
-            </Link>
+
+            <FilterSearchForm
+              action="/flows"
+              buttonLabel="Search"
+              className="mt-8 flex max-w-2xl items-center gap-2 rounded-full border border-[var(--line-strong)] bg-[var(--surface)] p-1.5 pl-5 focus-within:border-[var(--ink)]"
+            >
+              <SearchIcon className="shrink-0 text-[var(--faint)]" />
+              <input
+                name="q"
+                defaultValue={q ?? ""}
+                aria-label="Search flows"
+                placeholder="Search flows or an app in them"
+                className="h-10 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-[var(--faint)]"
+              />
+              {category ? <input type="hidden" name="category" value={category} /> : null}
+              {sort ? <input type="hidden" name="sort" value={sort} /> : null}
+            </FilterSearchForm>
           </div>
-        )}
-      </section>
-    </div>
+
+          <div className="container-page">
+            <nav aria-label="Categories" className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-4">
+              <FilterLink href={href({ category: undefined })} active={!category} param="category" className="chip">
+                All <span className="chip-count">{total}</span>
+              </FilterLink>
+              {chips.map((item) => (
+                <FilterLink key={item.id} href={href({ category: item.slug })} active={category === item.slug} param="category" className="chip">
+                  {item.name}
+                  <span className="chip-count">{item._count.flows}</span>
+                </FilterLink>
+              ))}
+            </nav>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--line)] py-3">
+              <Segmented label="Sort" param="sort" options={SORTS} current={sort} href={(value) => href({ sort: value })} />
+            </div>
+          </div>
+        </section>
+
+        <section className="container-page py-10 pb-24">
+          <FilterResults>
+            {filtered ? (
+              <p className="mb-6 flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
+                Showing {flows.length} {flows.length === 1 ? "flow" : "flows"}
+                {q ? (
+                  <>
+                    {" "}
+                    for <span className="font-bold text-[var(--ink)]">“{q}”</span>
+                  </>
+                ) : null}
+                <FilterLink href={sort ? `/flows?sort=${sort}` : "/flows"} active={false} className="underline underline-offset-4 hover:text-[var(--ink)]">
+                  Clear filters
+                </FilterLink>
+              </p>
+            ) : null}
+
+            {flows.length ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {flows.map((flow) => (
+                  <FlowCard key={flow.id} flow={flow} />
+                ))}
+              </div>
+            ) : (
+              <div className="card grid place-items-center px-6 py-20 text-center">
+                <p className="font-display text-3xl">{filtered ? "No flows match." : "No flows yet."}</p>
+                <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
+                  {filtered
+                    ? "Try a broader search or another category."
+                    : "Be the first: pick a few apps, describe how you use them together, and publish it."}
+                </p>
+                <Link href={filtered ? "/flows" : "/flows/new"} className="btn btn-primary mt-6">
+                  {filtered ? "Reset filters" : "Create a Flow"}
+                </Link>
+              </div>
+            )}
+          </FilterResults>
+        </section>
+      </div>
+    </FilterNavProvider>
   );
 }

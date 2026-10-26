@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slug";
+import { Spinner } from "../Spinner";
 import { EmptyRow } from "./PageHeader";
 
 type Category = { id: string; name: string; slug: string; _count: { tools: number } };
@@ -13,35 +14,53 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [error, setError] = useState("");
+  // Busy until the request is done and the refreshed list has arrived; `action` labels the button.
+  const [action, setAction] = useState<{ type: "add" } | { type: "remove"; id: string } | null>(null);
+  const [fetching, setFetching] = useState(false);
+  const [refreshing, startRefresh] = useTransition();
+  const busy = fetching || refreshing;
+  const adding = busy && action?.type === "add";
+  const removingId = busy && action?.type === "remove" ? action.id : null;
+  const refresh = () => startRefresh(() => router.refresh());
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (busy) return;
     setError("");
+    setAction({ type: "add" });
+    setFetching(true);
     const res = await fetch("/api/admin/categories", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ name, slug: slug || slugify(name) }),
     });
     if (!res.ok) {
+      setFetching(false);
       setError("Could not add it. The slug may already exist.");
       return;
     }
     setName("");
     setSlug("");
     setSlugTouched(false);
-    router.refresh();
+    setFetching(false);
+    refresh();
   }
 
   async function remove(category: Category) {
     setError("");
+    if (busy) return;
     if (!confirm(`Remove “${category.name}”?`)) return;
+    setAction({ type: "remove", id: category.id });
+    setFetching(true);
     const res = await fetch(`/api/admin/categories/${category.id}`, { method: "DELETE" });
     if (!res.ok) {
+      setFetching(false);
       const json = await res.json().catch(() => null);
       setError(json?.error ?? "Could not remove it.");
       return;
     }
-    router.refresh();
+    setFetching(false);
+    refresh();
   }
 
   return (
@@ -58,8 +77,9 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
                 <span className="text-sm text-[var(--muted)]">
                   {category._count.tools} {category._count.tools === 1 ? "tool" : "tools"}
                 </span>
-                <button onClick={() => remove(category)} className="btn btn-danger btn-sm">
-                  Remove
+                <button onClick={() => remove(category)} disabled={busy} className="btn btn-danger btn-sm">
+                  {removingId === category.id ? <Spinner /> : null}
+                  {removingId === category.id ? "Removing…" : "Remove"}
                 </button>
               </li>
             ))}
@@ -96,7 +116,10 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
           />
         </label>
         {error ? <p role="alert" className="text-sm text-[var(--danger)]">{error}</p> : null}
-        <button className="btn btn-primary">Add category</button>
+        <button disabled={busy} className="btn btn-primary">
+          {adding ? <Spinner /> : null}
+          {adding ? "Adding…" : "Add category"}
+        </button>
       </form>
     </div>
   );

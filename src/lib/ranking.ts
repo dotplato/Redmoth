@@ -65,7 +65,7 @@ export async function rankedTools(where: Prisma.ToolWhereInput = {}) {
       include: {
         category: true,
         creator: true,
-        screenshots: { orderBy: { sortOrder: "asc" } },
+        screenshots: { orderBy: { sortOrder: "asc" }, take: 1 }, // boards show only the first
         _count: { select: { events: { where: { type: "OUTBOUND_CLICK" } }, savedBy: true, reviews: true } },
       },
     }),
