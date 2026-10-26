@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { SiteLogo } from "@/components/SiteLogo";
 import { authClient, authErrorMessage } from "@/lib/auth-client";
 
 export default function AdminLoginPage() {
@@ -34,11 +35,8 @@ export default function AdminLoginPage() {
       <div className="paper-grain pointer-events-none absolute inset-0" />
       <div className="relative w-full max-w-sm">
         <div className="mb-8 flex items-center gap-2.5">
-          <span className="relative grid h-9 w-9 place-items-center rounded-[11px] bg-[var(--ink)]">
-            <span className="font-display text-[21px] leading-none text-white">T</span>
-            <span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-          </span>
-          <span className="font-bold tracking-tight">redmoth Admin</span>
+          <SiteLogo className="h-8" />
+          <span className="text-sm text-[var(--faint)]">Admin</span>
         </div>
         <div className="card p-7 shadow-[var(--shadow-lg)]">
           <h1 className="font-display text-4xl leading-none">Welcome back</h1>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { HERO_SLOTS, heroSlotPoint } from "@/lib/hero-slots";
+import { SYMBOL_SRC } from "../SiteLogo";
 import { ToolLogo } from "../ToolLogo";
 
 type App = { id: string; name: string; tagline: string; logoUrl: string | null };
@@ -95,9 +96,8 @@ export function HeroEditor({
       <div className="card p-4 sm:p-6">
         <p className="eyebrow mb-3">Slot map · click a spot to add or change its app</p>
         <div className="relative mx-auto aspect-[1180/330] w-full max-w-3xl">
-          <span className="absolute left-1/2 top-1/2 grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 rotate-45 place-items-center rounded-md bg-[var(--ink)]">
-            <span className="-rotate-45 font-display text-sm text-white">T</span>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={SYMBOL_SRC} alt="" className="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 object-contain" />
           {points.map((point, i) => {
             const app = slots[i] ? byId.get(slots[i]!) : null;
             return (

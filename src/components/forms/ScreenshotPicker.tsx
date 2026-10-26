@@ -117,7 +117,7 @@ export function ScreenshotPicker({
             } ${shots.length ? "" : `col-span-2 aspect-auto py-8 ${compact ? "" : "sm:col-span-3"}`}`}
           >
             <span>
-              <span className="mx-auto grid h-9 w-9 place-items-center rounded-full bg-[var(--accent)] text-lg font-bold">+</span>
+              <span className="mx-auto grid h-9 w-9 place-items-center rounded-full bg-[var(--accent)] text-lg font-bold text-[var(--accent-ink)]">+</span>
               <span className="mt-2 block text-sm font-bold">{shots.length ? "Add more" : "Add screenshots"}</span>
               <span className="block px-2 text-xs text-[var(--faint)]">Click or drop images · {typeLabel} · 5 MB each</span>
             </span>

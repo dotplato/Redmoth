@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { getCreatorSession } from "@/lib/creator-auth";
+import { SiteLogo } from "./SiteLogo";
 
 export async function SiteHeader({ savedCount = 0 }: { savedCount?: number }) {
   const session = await getCreatorSession();
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[color:rgb(247_247_244_/_0.85)] backdrop-blur-xl">
       <div className="container-page flex h-16 items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="redmoth home">
-          <BrandMark />
-          <span className="hidden text-[15px] font-bold tracking-tight min-[400px]:inline">redmoth</span>
+        <Link href="/" className="flex shrink-0 items-center" aria-label="redmoth home">
+          <SiteLogo className="h-6 sm:h-7" alt="" />
         </Link>
         <nav className="flex items-center gap-1 text-sm sm:gap-2">
           <Link href="/discover" className="btn btn-ghost hidden md:inline-flex">
@@ -54,15 +54,6 @@ export async function SiteHeader({ savedCount = 0 }: { savedCount?: number }) {
         </nav>
       </div>
     </header>
-  );
-}
-
-export function BrandMark() {
-  return (
-    <span className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-[var(--ink)]">
-      <span className="font-display text-[19px] leading-none text-white">T</span>
-      <span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-    </span>
   );
 }
 

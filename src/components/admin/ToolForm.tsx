@@ -211,7 +211,7 @@ export function ToolForm({
         onClick={() => setAiOpen(true)}
         className="group mb-6 flex w-full items-center gap-4 rounded-[1.25rem] border border-[var(--accent)]/25 bg-gradient-to-r from-[var(--accent-soft)] to-[var(--surface)] p-4 text-left transition hover:border-[var(--accent)]/60 sm:p-5"
       >
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--accent)] text-lg text-[var(--ink)]">✦</span>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--accent)] text-lg text-[var(--accent-ink)]">✦</span>
         <span className="min-w-0 flex-1">
           <span className="block font-bold">{aiFilled ? "Filled with AI — review and save" : "Fill this form with AI"}</span>
           <span className="block text-sm text-[var(--muted)]">

@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { BrandMark } from "./SiteHeader";
+import { SiteLogo } from "./SiteLogo";
 
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-[var(--line)] bg-[var(--bg-deep)]">
       <div className="container-page grid gap-10 py-12 md:grid-cols-[1.4fr_1fr]">
         <div>
-          <Link href="/" className="flex items-center gap-2.5">
-            <BrandMark />
-            <span className="text-[15px] font-bold tracking-tight">redmoth</span>
+          <Link href="/" className="inline-flex items-center">
+            <SiteLogo className="h-7" />
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-[var(--muted)]">
             A hand-picked collection of independent AI products. Every Visit button opens the tool&rsquo;s own

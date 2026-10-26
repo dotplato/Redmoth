@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SiteLogo } from "../SiteLogo";
 
 const items = [
   { href: "/admin", label: "Overview", icon: "M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z" },
@@ -37,7 +38,7 @@ export function AdminNav({ email, unread = 0 }: { email: string; unread?: number
               <Icon d={item.icon} />
               {item.label}
               {item.href === "/admin/notifications" && unread ? (
-                <span className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-[var(--accent)] px-1.5 text-[11px] font-bold text-[var(--ink)]">
+                <span className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-[var(--accent)] px-1.5 text-[11px] font-bold text-[var(--accent-ink)]">
                   {unread}
                 </span>
               ) : null}
@@ -71,7 +72,7 @@ export function AdminNav({ email, unread = 0 }: { email: string; unread?: number
               key={item.href}
               href={item.href}
               aria-current={isActive(item.href) ? "page" : undefined}
-              className="flex h-8 shrink-0 items-center rounded-full px-3 text-[13px] text-[var(--muted)] aria-[current=page]:bg-[var(--accent)] aria-[current=page]:font-bold aria-[current=page]:text-[var(--ink)]"
+              className="flex h-8 shrink-0 items-center rounded-full px-3 text-[13px] text-[var(--muted)] aria-[current=page]:bg-[var(--accent)] aria-[current=page]:font-bold aria-[current=page]:text-[var(--accent-ink)]"
             >
               {item.label}
               {item.href === "/admin/notifications" && unread ? (
@@ -90,13 +91,8 @@ export function AdminNav({ email, unread = 0 }: { email: string; unread?: number
 function Brand() {
   return (
     <Link href="/admin" className="flex items-center gap-2.5 px-2">
-      <span className="relative grid h-8 w-8 place-items-center rounded-[10px] bg-[var(--ink)]">
-        <span className="font-display text-[19px] leading-none text-white">T</span>
-        <span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-      </span>
-      <span className="text-sm font-bold tracking-tight">
-        redmoth <span className="font-normal text-[var(--faint)]">Admin</span>
-      </span>
+      <SiteLogo className="h-6" />
+      <span className="text-sm text-[var(--faint)]">Admin</span>
     </Link>
   );
 }

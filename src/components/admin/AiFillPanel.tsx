@@ -138,7 +138,7 @@ export function AiFillPanel({
       >
         <div className="flex items-start justify-between gap-4 border-b border-[var(--line)] px-6 py-5">
           <div className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--accent)] text-[var(--ink)]">✦</span>
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--accent)] text-[var(--accent-ink)]">✦</span>
             <div>
               <h2 id="ai-fill-title" className="">
                 AI data entry

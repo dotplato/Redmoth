@@ -21,7 +21,7 @@ export function AiSearchBox({
         action="/search"
         className={`group flex items-center gap-2 border border-[var(--line-strong)] bg-[var(--surface)] shadow-[var(--shadow)] ${compact ? "rounded-[1.25rem] p-1.5 pl-4" : "rounded-[1.5rem] p-2 pl-5"} transition focus-within:border-[var(--ink)] focus-within:shadow-[0_0_0_4px_var(--accent-soft),var(--shadow)]`}
       >
-        <span aria-hidden className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[var(--accent)] text-sm">
+        <span aria-hidden className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[var(--accent)] text-sm text-[var(--accent-ink)]">
           ✦
         </span>
         <input

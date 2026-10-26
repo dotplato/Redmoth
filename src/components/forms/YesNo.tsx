@@ -25,7 +25,7 @@ export function YesNo({
           className={`relative cursor-pointer rounded-full px-5 py-1.5 text-sm font-bold transition has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--ink)] ${
             value === option.on
               ? option.on
-                ? "bg-[var(--accent)] text-[var(--ink)]"
+                ? "bg-[var(--accent)] text-[var(--accent-ink)]"
                 : "bg-[var(--ink)] text-white"
               : "text-[var(--muted)] hover:text-[var(--ink)]"
           }`}

@@ -179,7 +179,7 @@ export function SubmitToolForm({
   if (done) {
     return (
       <div className="card mx-auto max-w-xl p-8 text-center sm:p-12">
-        <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[var(--accent)] text-2xl">✓</span>
+        <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[var(--accent)] text-2xl text-[var(--accent-ink)]">✓</span>
         <h2 className="mt-6 text-3xl">
           {existing ? `${done.name} is back in review` : `Thanks — ${done.name} is in review`}
         </h2>

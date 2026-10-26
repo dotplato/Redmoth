@@ -59,7 +59,7 @@ export function SaveButton({
       title={label}
       className={`relative z-10 grid h-8 w-8 shrink-0 place-items-center rounded-full border transition ${
         saved
-          ? "border-[var(--ink)] bg-[var(--accent)] text-[var(--ink)]"
+          ? "border-[var(--ink)] bg-[var(--accent)] text-[var(--accent-ink)]"
           : "border-[var(--line-strong)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--ink)] hover:text-[var(--ink)] sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
       }`}
     >

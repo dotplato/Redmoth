@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { HERO_SLOTS } from "@/lib/hero-slots";
+import { SYMBOL_SRC } from "./SiteLogo";
 
 export type NetworkApp = { name: string; slug: string; logoUrl: string | null };
 
@@ -85,15 +86,15 @@ export function AppNetwork({ apps }: { apps: (NetworkApp | null)[] }) {
     el("stop", { offset: 1, "stop-color": "#fff", "stop-opacity": 0 }, fade);
     const mask = el("mask", { id: "tm-mask" }, defs);
     el("rect", { x: -600, y: -400, width: 1200, height: 800, fill: "url(#tm-fade)" }, mask);
-    // Tile sides blend from brand yellow at the top edge into black at the base (right face a touch darker).
+    // Tile sides blend from brand red at the top edge into black at the base (right face a touch darker).
     const sideGradient = (id: string, from: string, mid: string, to: string) => {
       const g = el("linearGradient", { id, x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
       el("stop", { offset: 0, "stop-color": from }, g);
       el("stop", { offset: 0.45, "stop-color": mid }, g);
       el("stop", { offset: 1, "stop-color": to }, g);
     };
-    sideGradient("tm-side-l-fill", "#ffd500", "#b89900", "#1c1a14");
-    sideGradient("tm-side-r-fill", "#e6bd00", "#8a7300", "#0b0b0b");
+    sideGradient("tm-side-l-fill", "#ea2629", "#a3171a", "#1c1414");
+    sideGradient("tm-side-r-fill", "#c81e21", "#7d1214", "#0b0b0b");
     // Hub: a solid black block. Each side catches a little light at its top edge and falls to deep black;
     // the right face sits further from the light, and the top has a faint white→grey sheen.
     const hubGradient = (id: string, stops: [number, string][], x2 = 0, y2 = 1) => {
@@ -174,10 +175,8 @@ export function AppNetwork({ apps }: { apps: (NetworkApp | null)[] }) {
 
     function drawIcon(g: SVGGElement, item: Item, isHub: boolean) {
       if (isHub) {
-        const m = el("g", { class: "tm-mark" }, g);
-        el("rect", { x: -19, y: -15, width: 38, height: 9, rx: 4.5 }, m);
-        el("rect", { x: -4.5, y: -15, width: 9, height: 31, rx: 4.5 }, m);
-        el("circle", { class: "tm-mark-dot", cx: 13.5, cy: 9, r: 4.5 }, g);
+        // The redmoth moth symbol (112×105) centred on the hub.
+        el("image", { href: SYMBOL_SRC, x: -24, y: -22.5, width: 48, height: 45, preserveAspectRatio: "xMidYMid meet" }, g);
         return;
       }
       if (item.placeholder) return; // its "+" is drawn upright in buildTile so it doesn't read as "×"
@@ -337,6 +336,107 @@ export function AppNetwork({ apps }: { apps: (NetworkApp | null)[] }) {
       root.addEventListener("pointerleave", onLeave);
     }
 
+    /* ---------- flying moths ---------- */
+    // A few small moths (the logo symbol) wander over the scene. Decorative only: no pointer events
+    // (see .tm-moths), paused off-screen, and not shown at all with reduced motion.
+    const MOTH_COUNT = 10;
+    const MOTH_SIZE = { min: 16, max: 28 }; // width in scene units
+    const MOTH_SPEED = { min: 30, max: 60 }; // scene units per second
+    const MOTH_FLAP_HZ = { min: 2.5, max: 4 };
+    const MAX_TURN = 2; // radians per second
+    const VERTICAL_DAMPING = 0.6; // the scene is wide and short, so flight leans horizontal
+    const FLIP_SPEED = 6; // |horizontal speed| needed before a moth turns to face the other way
+    const MAX_TILT_DEG = 35;
+    const MAX_FRAME_SECONDS = 0.05; // after a stall (hidden tab), resume instead of jumping
+    // Inside the viewBox (-640…640, -215…175), so moths stay mostly in view.
+    const BOUNDS = { x: 580, top: -185, bottom: 150 };
+    const SYMBOL_RATIO = 105.215 / 112.212; // logo-symbol.svg height / width
+    // Each moth keeps to its own stretch of the scene (homes spaced evenly across the width) so both
+    // sides always have moths; neighbouring stretches overlap so they still mingle.
+    const HOME_SPACING = (BOUNDS.x * 2) / MOTH_COUNT;
+    const HOME_RANGE = HOME_SPACING * 1.5;
+
+    type Moth = {
+      g: SVGGElement;
+      wings: SVGGElement;
+      x: number;
+      y: number;
+      homeX: number;
+      heading: number;
+      turn: number;
+      speed: number;
+      flapHz: number;
+      phase: number;
+      facingLeft: boolean;
+    };
+    const rand = (min: number, max: number) => min + Math.random() * (max - min);
+    const mothsG = el<SVGGElement>("g", { class: "tm-moths", "aria-hidden": "true" }, svg);
+    const moths: Moth[] = reduce
+      ? []
+      : Array.from({ length: MOTH_COUNT }, (_, i) => {
+          const width = rand(MOTH_SIZE.min, MOTH_SIZE.max);
+          const height = width * SYMBOL_RATIO;
+          const g = el<SVGGElement>("g", {}, mothsG);
+          const wings = el<SVGGElement>("g", {}, g);
+          el("image", { href: SYMBOL_SRC, x: -width / 2, y: -height / 2, width, height }, wings);
+          const heading = rand(0, Math.PI * 2);
+          const homeX = -BOUNDS.x + HOME_SPACING * (i + 0.5);
+          return {
+            g,
+            wings,
+            x: homeX + rand(-HOME_SPACING, HOME_SPACING) / 2,
+            y: rand(BOUNDS.top, BOUNDS.bottom),
+            homeX,
+            heading,
+            turn: 0,
+            speed: rand(MOTH_SPEED.min, MOTH_SPEED.max),
+            flapHz: rand(MOTH_FLAP_HZ.min, MOTH_FLAP_HZ.max),
+            phase: rand(0, Math.PI * 2),
+            facingLeft: Math.cos(heading) < 0,
+          };
+        });
+
+    const moveMoth = (m: Moth, dt: number, seconds: number) => {
+      // Wander: the turn rate itself drifts randomly. Once outside the scene or its own stretch,
+      // steer back toward its home point instead.
+      const outside =
+        Math.abs(m.x) > BOUNDS.x || Math.abs(m.x - m.homeX) > HOME_RANGE || m.y < BOUNDS.top || m.y > BOUNDS.bottom;
+      if (outside) {
+        const toHome = Math.atan2(-m.y, m.homeX - m.x);
+        const off = Math.atan2(Math.sin(toHome - m.heading), Math.cos(toHome - m.heading));
+        m.turn = Math.sign(off) * MAX_TURN;
+      } else {
+        m.turn = Math.max(-MAX_TURN, Math.min(MAX_TURN, m.turn + rand(-6, 6) * dt));
+      }
+      m.heading += m.turn * dt;
+
+      const vx = Math.cos(m.heading) * m.speed;
+      const vy = Math.sin(m.heading) * m.speed * VERTICAL_DAMPING;
+      m.x += vx * dt;
+      m.y += vy * dt;
+
+      // Face the direction of travel (the symbol faces right), tilting a little when climbing or diving.
+      if (Math.abs(vx) > FLIP_SPEED) m.facingLeft = vx < 0;
+      const tiltDeg = Math.max(-MAX_TILT_DEG, Math.min(MAX_TILT_DEG, (Math.atan2(vy, Math.abs(vx)) * 180) / Math.PI));
+      m.g.setAttribute(
+        "transform",
+        `translate(${m.x} ${m.y}) rotate(${m.facingLeft ? -tiltDeg : tiltDeg}) scale(${m.facingLeft ? -1 : 1} 1)`,
+      );
+      // Wing beat: squash the symbol vertically.
+      const beat = Math.abs(Math.sin(seconds * m.flapHz * Math.PI + m.phase));
+      m.wings.setAttribute("transform", `scale(1 ${0.55 + 0.45 * beat})`);
+    };
+
+    let mothFrame = 0;
+    let lastFlight = performance.now();
+    const fly = (now: number) => {
+      const dt = Math.min(MAX_FRAME_SECONDS, (now - lastFlight) / 1000);
+      lastFlight = now;
+      if (onScreen && !document.hidden) moths.forEach((m) => moveMoth(m, dt, now / 1000));
+      mothFrame = requestAnimationFrame(fly);
+    };
+    if (moths.length) mothFrame = requestAnimationFrame(fly);
+
     /* ---------- intro sequence ---------- */
     if (reduce) {
       root.classList.add("tm-ready");
@@ -372,6 +472,7 @@ export function AppNetwork({ apps }: { apps: (NetworkApp | null)[] }) {
       timers.forEach(clearTimeout);
       if (interval) clearInterval(interval);
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(mothFrame);
       observer.disconnect();
       if (parallax) {
         root.removeEventListener("pointermove", onMove);

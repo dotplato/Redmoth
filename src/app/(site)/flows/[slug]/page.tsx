@@ -165,7 +165,7 @@ export default async function FlowPage({
                 <li key={step.id} className="relative flex gap-4 pb-8 last:pb-0 sm:gap-6">
                   {/* Rail joining the step numbers. */}
                   {i < flow.steps.length - 1 ? <span aria-hidden className="absolute left-[19px] top-11 bottom-1 w-px bg-[var(--line-strong)]" /> : null}
-                  <span className="font-display relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--ink)] ring-1 ring-[var(--ink)]">
+                  <span className="font-display relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--accent-ink)] ring-1 ring-[var(--ink)]">
                     {i + 1}
                   </span>
                   <div className="card min-w-0 flex-1 p-5">

@@ -10,11 +10,11 @@
   --faint: #8f8f88;
   --line: #e5e5df;
   --line-strong: #d2d2ca;
-  /* Primary yellow is a fill colour only; text on it (and next to it) stays ink. */
-  --accent: #ffd500;
-  --accent-hover: #f0c800;
-  --accent-ink: #0b0b0b;
-  --accent-soft: #fff7c7;
+  /* Brand red (the logo's). Text and icons on a red fill use --accent-ink. */
+  --accent: #ea2629;
+  --accent-hover: #c81e21;
+  --accent-ink: #ffffff;
+  --accent-soft: #fde8e8;
   --go: #0b0b0b;
   --go-ink: #ffffff;
   --ok: #1d7a49;
@@ -86,7 +86,7 @@
     letter-spacing: -0.005em;
   }
 
-  /* Yellow highlighter stroke behind a word in a heading. */
+  /* Red highlighter stroke behind a word in a heading (the word stays ink). */
   .mark {
     background: linear-gradient(transparent 58%, var(--accent) 58%, var(--accent) 92%, transparent 92%);
     padding-inline: 0.06em;
@@ -167,7 +167,7 @@
     color: var(--accent-ink);
     box-shadow:
       inset 0 0 0 1px rgba(11, 11, 11, 0.08),
-      0 6px 18px -8px rgba(201, 160, 0, 0.7);
+      0 6px 18px -8px rgba(234, 38, 41, 0.55);
   }
 
   .btn-accent:hover {
@@ -348,7 +348,7 @@
   .chip[aria-pressed="true"] {
     background: var(--accent);
     border-color: var(--ink);
-    color: var(--ink);
+    color: var(--accent-ink);
   }
 
   .chip-count {
@@ -357,7 +357,7 @@
     opacity: 0.6;
   }
 
-  /* Outline tags: a coloured dot + label. Featured is ink/yellow; pricing tags take their colours from --tag-fg/--tag-bg. */
+  /* Outline tags: a coloured dot + label. Featured is ink/red; pricing tags take their colours from --tag-fg/--tag-bg. */
   .tag-featured,
   .tag-price {
     display: inline-flex;
@@ -402,7 +402,7 @@
     padding-inline: 0.5rem;
     border-radius: 999px;
     background: var(--accent);
-    color: var(--ink);
+    color: var(--accent-ink);
     font-size: 11px;
     font-weight: 700;
   }
@@ -417,8 +417,8 @@
 
 .glow {
   background:
-    radial-gradient(40% 60% at 85% 10%, rgba(255, 213, 0, 0.22), transparent 70%),
-    radial-gradient(35% 50% at 10% 0%, rgba(255, 213, 0, 0.1), transparent 70%);
+    radial-gradient(40% 60% at 85% 10%, rgba(234, 38, 41, 0.12), transparent 70%),
+    radial-gradient(35% 50% at 10% 0%, rgba(234, 38, 41, 0.06), transparent 70%);
 }
 
 .screenshot-rail {
@@ -464,7 +464,7 @@
 }
 
 .practice-edge {
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 35%, #fff3a6 50%, var(--accent) 65%, var(--accent) 100%);
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 35%, #f7a1a2 50%, var(--accent) 65%, var(--accent) 100%);
   background-size: 100% 300%;
   animation: practice-shimmer 4s ease-in-out infinite;
 }
@@ -500,11 +500,11 @@
 /* ================= Hero app network (AppNetwork.tsx) ================= */
 .tm-network {
   --tm-primary: var(--accent);
-  --tm-primary-mid: #e6bd00;
-  --tm-primary-deep: #a88600;
+  --tm-primary-mid: #c81e21;
+  --tm-primary-deep: #8f1416;
   --tm-ink: var(--ink);
   --tm-tile-top: #ffffff;
-  --tm-grid: #ece2b6;
+  --tm-grid: #f0d6d6;
 
   position: relative;
   width: 100%;
@@ -520,6 +520,9 @@
   -webkit-tap-highlight-color: transparent;
 }
 .tm-network svg { display: block; width: 100%; height: 100%; }
+/* Flying moths (decorative): never block clicks on tiles; fade in once the intro has played. */
+.tm-moths { pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
+.tm-ready .tm-moths { opacity: .9; }
 .tm-scene, .tm-grid-layer { transition: transform .7s cubic-bezier(.2,.7,.2,1); }
 
 .tm-grid-line { stroke: var(--tm-grid); stroke-width: 1; fill: none; }
@@ -571,8 +574,6 @@
 .tm-side-l { fill: var(--tm-primary); fill: url(#tm-side-l-fill); }
 .tm-side-r { fill: var(--tm-primary-mid); fill: url(#tm-side-r-fill); }
 .tm-top    { fill: var(--tm-tile-top); fill: url(#tm-top-sheen); stroke: rgba(11,11,11,.06); stroke-width: 1; transition: stroke .2s; }
-.tm-mark   { fill: var(--tm-ink); }
-.tm-mark-dot { fill: var(--tm-primary); stroke: var(--tm-ink); stroke-width: 2; }
 /* Center hub: a realistic black block under a white top. A same-colour round-joined stroke
    softens the polygon corners so the block reads as rounded rather than paper-cut. */
 .tm-hub .tm-side-l { fill: url(#tm-hub-l); stroke: url(#tm-hub-l); stroke-width: 7; stroke-linejoin: round; }

@@ -16,7 +16,7 @@ export function FlowMark({ logoUrl, title, stack, size = "md" }: { logoUrl: stri
           // eslint-disable-next-line @next/next/no-img-element
           <img key={i} src={app.logoUrl} alt="" className={`h-full w-full bg-white object-contain ${TILE[size]}`} />
         ) : (
-          <span key={i} className={`font-display grid place-items-center bg-[var(--accent)] text-[var(--ink)] ${TILE[size]}`}>
+          <span key={i} className={`font-display grid place-items-center bg-[var(--accent)] text-[var(--accent-ink)] ${TILE[size]}`}>
             {app.name.slice(0, 1).toUpperCase()}
           </span>
         ),

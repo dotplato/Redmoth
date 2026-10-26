@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export type ScenarioStep = { key: string; label: string; text: string; placeholder?: boolean };
 
 /**
- * A scenario told in steps: numbered tabs above the paragraph, and the active step highlighted in yellow.
+ * A scenario told in steps: numbered tabs above the paragraph, and the active step highlighted in the brand red.
  * Cycles on its own until the reader hovers, clicks or focuses a step.
  */
 export function ScenarioSteps({ steps, interval = 2600 }: { steps: ScenarioStep[]; interval?: number }) {
@@ -53,7 +53,7 @@ export function ScenarioSteps({ steps, interval = 2600 }: { steps: ScenarioStep[
             <span
               onMouseEnter={() => setActive(index)}
               className={`cursor-default rounded transition-colors duration-300 ${
-                current === index ? "bg-[var(--accent)] text-[var(--ink)]" : ""
+                current === index ? "bg-[var(--accent)] text-[var(--accent-ink)]" : ""
               } ${step.placeholder ? "italic opacity-60" : ""}`}
             >
               {step.text}

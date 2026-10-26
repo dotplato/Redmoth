@@ -63,7 +63,7 @@ export function TopToolsBoard({ tools }: { tools: BoardTool[] }) {
                 <div className="flex items-start justify-between gap-3">
                   <span
                     className={`font-display grid h-12 w-12 place-items-center rounded-2xl text-2xl ${
-                      i === 0 ? "bg-[var(--accent)] text-[var(--ink)]" : "bg-[var(--bg-deep)] text-[var(--ink)]"
+                      i === 0 ? "bg-[var(--accent)] text-[var(--accent-ink)]" : "bg-[var(--bg-deep)] text-[var(--ink)]"
                     }`}
                     aria-label={`Rank ${i + 1}`}
                   >

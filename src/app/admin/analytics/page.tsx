@@ -79,10 +79,10 @@ export default async function AnalyticsPage() {
 
 function Stat({ label, value, hint, accent }: { label: string; value: number | string; hint?: string; accent?: boolean }) {
   return (
-    <div className={`card p-5 ${accent ? "border-[var(--ink)] bg-[var(--accent)]" : ""}`}>
-      <p className={`text-xs font-bold ${accent ? "text-[var(--ink)]" : "text-[var(--muted)]"}`}>{label}</p>
+    <div className={`card p-5 ${accent ? "border-[var(--ink)] bg-[var(--accent)] text-[var(--accent-ink)]" : ""}`}>
+      <p className={`text-xs font-bold ${accent ? "" : "text-[var(--muted)]"}`}>{label}</p>
       <p className="font-display mt-2 text-5xl leading-none">{value}</p>
-      {hint ? <p className={`mt-2 text-xs ${accent ? "text-[var(--ink-soft)]" : "text-[var(--faint)]"}`}>{hint}</p> : null}
+      {hint ? <p className={`mt-2 text-xs ${accent ? "opacity-85" : "text-[var(--faint)]"}`}>{hint}</p> : null}
     </div>
   );
 }

@@ -231,7 +231,7 @@ export function FlowForm({
                   return (
                     <li key={step.key} className="relative rounded-2xl border border-[var(--line)] bg-[var(--bg)] p-4 sm:p-5">
                       <div className="flex items-center gap-3">
-                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--accent)] font-display text-sm text-[var(--ink)] ring-1 ring-[var(--ink)]">
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--accent)] font-display text-sm text-[var(--accent-ink)] ring-1 ring-[var(--ink)]">
                           {i + 1}
                         </span>
                         <p className="min-w-0 flex-1 truncate text-sm font-bold">Step {i + 1}{app ? ` · ${app.name}` : ""}</p>
