@@ -1,7 +1,8 @@
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { clearAdminCookie } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: Request) {
-  await clearAdminCookie();
+  await auth.api.signOut({ headers: await headers() });
   return NextResponse.redirect(new URL("/admin/login", request.url), 303);
 }

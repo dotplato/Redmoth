@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentCreator, uniqueSlug } from "@/lib/creator-auth";
+import { getCurrentCreator } from "@/lib/creator-auth";
+import { uniqueSlug } from "@/lib/slug";
 import { prisma } from "@/lib/prisma";
 import { readSubmission, resolveMaker, submissionFields } from "@/lib/submission";
 

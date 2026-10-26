@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { hash } from "bcryptjs";
+import { upsertAdmin } from "./admin-account";
 
 const prisma = new PrismaClient();
 
@@ -43,15 +43,10 @@ async function main() {
   await prisma.tool.deleteMany();
   await prisma.creator.deleteMany();
   await prisma.category.deleteMany();
-  await prisma.user.deleteMany();
+  await prisma.user.deleteMany(); // cascades to sessions and accounts
+  await prisma.verification.deleteMany();
 
-  const passwordHash = await hash(process.env.ADMIN_PASSWORD ?? "admin1234", 10);
-  await prisma.user.create({
-    data: {
-      email: process.env.ADMIN_EMAIL ?? "admin@redmoth.local",
-      passwordHash,
-    },
-  });
+  await upsertAdmin(prisma, process.env.ADMIN_EMAIL ?? "admin@redmoth.local", process.env.ADMIN_PASSWORD ?? "admin1234");
 
   const [writing, research, image, ops] = await Promise.all([
     prisma.category.create({ data: { name: "Writing", slug: "writing" } }),

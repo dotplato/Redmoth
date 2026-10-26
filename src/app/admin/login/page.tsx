@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { authClient, authErrorMessage } from "@/lib/auth-client";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -13,17 +14,14 @@ export default function AdminLoginPage() {
     setError("");
     setLoading(true);
     const form = new FormData(event.currentTarget);
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        email: form.get("email"),
-        password: form.get("password"),
-      }),
+    const { error } = await authClient.signIn.email({
+      email: String(form.get("email") ?? ""),
+      password: String(form.get("password") ?? ""),
     });
-    if (!res.ok) {
+    if (error) {
       setLoading(false);
-      setError("That email and password don't match.");
+      // FORBIDDEN: a valid non-admin account (blocked by the session hook in src/lib/auth.ts).
+      setError(error.status === 403 ? "This account doesn't have admin access." : authErrorMessage(error));
       return;
     }
     router.replace("/admin");

@@ -1,13 +1,20 @@
 import { prisma } from "./prisma";
 
-type EmailInput = { to: string; subject: string; text: string; toolId?: string };
+type EmailInput = {
+  to: string;
+  subject: string;
+  text: string;
+  toolId?: string;
+  // Stored in EmailLog instead of `text`, for emails carrying secrets (verification/reset links).
+  logText?: string;
+};
 export type EmailResult = { status: "SENT" | "SKIPPED" | "FAILED"; error?: string };
 
 /**
  * Sends a plain-text email through Resend (https://resend.com) when RESEND_API_KEY and EMAIL_FROM are set.
  * Every attempt is stored in EmailLog, so nothing is lost while no provider is configured ("SKIPPED").
  */
-export async function sendEmail({ to, subject, text, toolId }: EmailInput): Promise<EmailResult> {
+export async function sendEmail({ to, subject, text, toolId, logText }: EmailInput): Promise<EmailResult> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   let result: EmailResult;
@@ -28,7 +35,7 @@ export async function sendEmail({ to, subject, text, toolId }: EmailInput): Prom
     }
   }
 
-  await prisma.emailLog.create({ data: { to, subject, body: text, status: result.status, error: result.error, toolId } });
+  await prisma.emailLog.create({ data: { to, subject, body: logText ?? text, status: result.status, error: result.error, toolId } });
   if (result.status !== "SENT") console.warn(`[email] ${result.status} → ${to}: ${subject}${result.error ? ` (${result.error})` : ""}`);
   return result;
 }

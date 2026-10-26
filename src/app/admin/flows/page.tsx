@@ -9,7 +9,7 @@ export default async function AdminFlowsPage() {
   const flows = await prisma.flow.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      author: { select: { name: true, email: true } },
+      author: { select: { name: true, user: { select: { email: true } } } },
       category: true,
       stack: { orderBy: { position: "asc" }, include: { tool: { select: { name: true, logoUrl: true } } } },
       _count: { select: { steps: true, savedBy: true } },
@@ -52,7 +52,7 @@ export default async function AdminFlowsPage() {
                     </td>
                     <td className="px-3 py-3 text-[var(--muted)]">
                       <span className="block">{flow.author.name}</span>
-                      {flow.author.email ? <span className="block text-xs text-[var(--faint)]">{flow.author.email}</span> : null}
+                      {flow.author.user ? <span className="block text-xs text-[var(--faint)]">{flow.author.user.email}</span> : null}
                     </td>
                     <td className="px-3 py-3 text-[var(--muted)]">{flow.category.name}</td>
                     <td className="px-3 py-3 text-right text-[var(--muted)]">{flow._count.steps}</td>

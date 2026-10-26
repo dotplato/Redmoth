@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { fieldErrors, submissionPayload } from "./admin-schema";
-import { uniqueSlug } from "./creator-auth";
+import { uniqueSlug } from "./slug";
 import { prisma } from "./prisma";
 import { joinScenario } from "./scenario";
 import { MAX_SCREENSHOTS } from "./upload-limits";
@@ -81,7 +81,7 @@ export function submissionFields(data: Parsed) {
  */
 export async function resolveMaker(account: { id: string; name: string }, makerName: string, appName: string) {
   if (makerName.toLowerCase() === account.name.toLowerCase()) return account.id;
-  const existing = await prisma.creator.findFirst({ where: { name: makerName, passwordHash: null } });
+  const existing = await prisma.creator.findFirst({ where: { name: makerName, userId: null } });
   if (existing) return existing.id;
   const slug = await uniqueSlug(makerName, async (s) => Boolean(await prisma.creator.findUnique({ where: { slug: s } })));
   const made = await prisma.creator.create({ data: { name: makerName, slug, bio: `Maker of ${appName}.` } });

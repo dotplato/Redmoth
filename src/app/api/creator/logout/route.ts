@@ -1,7 +1,8 @@
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { clearCreatorCookie } from "@/lib/creator-auth";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: Request) {
-  await clearCreatorCookie();
+  await auth.api.signOut({ headers: await headers() });
   return NextResponse.redirect(new URL("/", request.url), 303);
 }

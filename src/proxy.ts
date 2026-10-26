@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ADMIN_COOKIE, readSessionToken } from "@/lib/auth";
+import { ADMIN_ROLE, auth } from "@/lib/auth";
 import { isAdminHost } from "@/lib/host";
 
-export async function middleware(request: NextRequest) {
+// Runs on Node.js (Next 16 proxy), so the admin guard checks the real session and role, not just a cookie.
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = request.headers.get("host");
   const admin = isAdminHost(host);
+
+  // Better Auth serves both domains (sign-in on the admin domain, everything on the site).
+  if (pathname.startsWith("/api/auth/")) return NextResponse.next();
 
   if (admin) {
     if (pathname.startsWith("/api") && !pathname.startsWith("/api/admin")) {
@@ -34,15 +38,13 @@ async function guardAdmin(
   response: NextResponse,
   pathname: string,
 ) {
-  const isLogin =
-    pathname === "/admin/login" ||
-    pathname === "/api/admin/login" ||
-    pathname === "/api/admin/logout";
+  const isLogin = pathname === "/admin/login" || pathname === "/api/admin/logout";
 
   if (isLogin) return response;
 
-  const session = await readSessionToken(request.cookies.get(ADMIN_COOKIE)?.value);
-  if (session) return response;
+  // Read-only check: refreshing the session cookie is left to the page/API that handles the request.
+  const session = await auth.api.getSession({ headers: request.headers, query: { disableRefresh: true } });
+  if (session?.user.role === ADMIN_ROLE) return response;
 
   if (pathname.startsWith("/api/admin")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

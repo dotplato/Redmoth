@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { hash } from "bcryptjs";
+import { upsertAdmin } from "./admin-account";
 
 // Creates (or resets the password of) the admin from ADMIN_EMAIL / ADMIN_PASSWORD.
 // Safe for production, unlike seed.ts, which wipes every table first.
@@ -11,8 +11,7 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD;
   if (!email || !password) throw new Error("Set ADMIN_EMAIL and ADMIN_PASSWORD");
 
-  const passwordHash = await hash(password, 10);
-  await prisma.user.upsert({ where: { email }, update: { passwordHash }, create: { email, passwordHash } });
+  await upsertAdmin(prisma, email, password);
   console.log(`Admin ready: ${email}`);
 }
 

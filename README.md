@@ -7,9 +7,10 @@ good shit.
 - Next.js App Router, deployed on **Vercel**
 - Prisma + **Postgres**
 - **Cloudflare R2** for uploaded images (logos, screenshots, avatars)
+- **Better Auth** (email + password, email verification, password reset), emails via **Resend**
 - Docker Compose for local development
 
-One app serves two domains: the marketplace, and the admin on `ADMIN_HOST` (see `src/middleware.ts`).
+One app serves two domains: the marketplace, and the admin on `ADMIN_HOST` (see `src/proxy.ts`).
 
 ## Local development
 
@@ -21,6 +22,7 @@ One app serves two domains: the marketplace, and the admin on `ADMIN_HOST` (see 
    ```
 
    This runs Postgres and the dev server (with hot reload), and applies migrations on start.
+   After `package.json` changes, rebuild with fresh dependencies: `docker compose up --build -V`.
 3. First run only, load demo data (this **wipes** the database):
 
    ```bash
@@ -35,6 +37,21 @@ If port 5432 is already used by another Postgres, set `POSTGRES_PORT=5433` in `.
 To run Next on your machine instead: `docker compose up db`, then `npm install && npm run dev`.
 
 Schema changes: edit `prisma/schema.prisma`, then `npm run db:migrate -- --name <change>` and commit the new migration.
+
+## Accounts and email
+
+Auth is [Better Auth](https://better-auth.com) (`src/lib/auth.ts`, endpoints under `/api/auth`).
+
+- **Creators** sign up on the site, must confirm their email before they can log in (logging in unverified sends a fresh link), and can reset a forgotten password at `/forgot-password`. Links expire after 1 hour; a reset signs out every other session.
+- **Admins** are users with role `admin`. There is no admin signup: create one, or reset its password, with
+
+  ```bash
+  ADMIN_EMAIL="you@…" ADMIN_PASSWORD="…" npm run db:create-admin
+  ```
+
+  Only admins can sign in on the admin domain.
+- Sign-in, sign-up and reset requests are rate-limited in production (stored in the `RateLimit` table).
+- Emails go through Resend (`src/lib/email.ts`) and are recorded in `EmailLog`, with the links removed. Locally, with Resend unset, links are printed in the dev server log.
 
 ## Uploads (R2)
 
