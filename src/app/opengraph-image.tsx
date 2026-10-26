@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "ToolsMade — discover the right AI tool";
+export const alt = "redmoth — discover the right AI tool";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -22,7 +22,7 @@ export default function Image() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 40, fontWeight: 700 }}>
           <div style={{ width: 56, height: 56, borderRadius: 28, background: "#ffd500", border: "3px solid #0b0b0b" }} />
-          ToolsMade
+          redmoth
         </div>
         <div style={{ display: "flex", flexDirection: "column", fontSize: 88, fontWeight: 700, lineHeight: 1.05 }}>
           <span>No noise.</span>

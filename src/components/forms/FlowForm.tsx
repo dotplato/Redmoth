@@ -171,7 +171,7 @@ export function FlowForm({
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={`Search ${apps.length} apps on ToolsMade…`}
+              placeholder={`Search ${apps.length} apps on redmoth…`}
               aria-label="Search apps to add"
               className="input"
             />

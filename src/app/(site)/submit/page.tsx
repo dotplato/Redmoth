@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Submit Your AI Tool — Free Listing",
-  description: "List your AI tool on ToolsMade for free. Add screenshots, pricing and a real-world example, and reach people looking for the right tool.",
+  description: "List your AI tool on redmoth for free. Add screenshots, pricing and a real-world example, and reach people looking for the right tool.",
   alternates: { canonical: "/submit" },
 };
 

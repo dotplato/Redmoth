@@ -28,8 +28,8 @@ type Item = {
 };
 
 /**
- * Isometric "app network": the ToolsMade hub wired to real listings, with data packets flowing out
- * to each app. Ported from the standalone toolsmade-app-network.html; tiles show the apps' logos.
+ * Isometric "app network": the redmoth hub wired to real listings, with data packets flowing out
+ * to each app. Ported from the standalone redmoth-app-network.html; tiles show the apps' logos.
  */
 /** `apps[i]` fills slot i; `null` (or a missing entry) shows a "Your app here" placeholder. */
 export function AppNetwork({ apps }: { apps: (NetworkApp | null)[] }) {
@@ -40,7 +40,7 @@ export function AppNetwork({ apps }: { apps: (NetworkApp | null)[] }) {
     const root = rootRef.current;
     if (!root) return;
 
-    const HUB: Item = { name: "ToolsMade", url: "/tools", cell: [0, 0] };
+    const HUB: Item = { name: "redmoth", url: "/tools", cell: [0, 0] };
     // Real listings take the first slots; any left over invite makers to list their app.
     const APPS: Item[] = SLOTS.map((slot, i) =>
       apps[i]
@@ -200,10 +200,10 @@ export function AppNetwork({ apps }: { apps: (NetworkApp | null)[] }) {
         class: isHub ? "tm-tile tm-hub" : item.placeholder ? "tm-tile tm-ghost" : "tm-tile",
         href: item.url,
         "aria-label": isHub
-          ? "Browse all apps on ToolsMade"
+          ? "Browse all apps on redmoth"
           : item.placeholder
-            ? "Submit your app to ToolsMade"
-            : `Open ${item.name} on ToolsMade`,
+            ? "Submit your app to redmoth"
+            : `Open ${item.name} on redmoth`,
         transform: `translate(${x} ${y})`,
       });
 
@@ -384,5 +384,5 @@ export function AppNetwork({ apps }: { apps: (NetworkApp | null)[] }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  return <section ref={rootRef} className="tm-network" aria-label="Apps on the ToolsMade marketplace" />;
+  return <section ref={rootRef} className="tm-network" aria-label="Apps on the redmoth marketplace" />;
 }

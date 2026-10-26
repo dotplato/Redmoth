@@ -40,11 +40,11 @@ export default function AdminLoginPage() {
             <span className="font-display text-[21px] leading-none text-white">T</span>
             <span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
           </span>
-          <span className="font-bold tracking-tight">ToolsMade Admin</span>
+          <span className="font-bold tracking-tight">redmoth Admin</span>
         </div>
         <div className="card p-7 shadow-[var(--shadow-lg)]">
           <h1 className="font-display text-4xl leading-none">Welcome back</h1>
-          <p className="mt-2 text-sm text-[var(--muted)]">Sign in to manage ToolsMade.</p>
+          <p className="mt-2 text-sm text-[var(--muted)]">Sign in to manage redmoth.</p>
           <form onSubmit={onSubmit} className="mt-6 grid gap-4">
             <label className="field">
               Email
@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
                 required
                 autoComplete="username"
                 className="input"
-                defaultValue="admin@toolsmade.local"
+                defaultValue="admin@redmoth.local"
               />
             </label>
             <label className="field">

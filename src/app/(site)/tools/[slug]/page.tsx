@@ -261,7 +261,7 @@ export default async function ToolPage({
           <div className="rounded-[1.25rem] border border-dashed border-[var(--line-strong)] p-6 text-sm leading-6 text-[var(--muted)]">
             <span className="font-bold text-[var(--ink)]">Always free to list.</span> Visit opens{" "}
             <span className="text-xs">{hostname(tool.websiteUrl)}</span>. Some Visit links are affiliate links, which
-            help keep ToolsMade free and never change the price you pay.
+            help keep redmoth free and never change the price you pay.
           </div>
         </div>
       </section>

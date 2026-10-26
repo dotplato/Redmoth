@@ -127,7 +127,7 @@ async function rankWithModel(query: string, tools: CatalogTool[], flows: Catalog
 
   const res = await fetch(OPENROUTER_URL, {
     method: "POST",
-    headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json", "x-title": "ToolsMade Search" },
+    headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json", "x-title": "redmoth Search" },
     body: JSON.stringify({
       model: process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultra-550b-a55b:free",
       max_tokens: 600,

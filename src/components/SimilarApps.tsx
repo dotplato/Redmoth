@@ -12,7 +12,7 @@ export type SimilarApp = {
 };
 
 // Fired by the page-header Compare button so the list opens ready to pick.
-export const START_COMPARE_EVENT = "toolsmade:start-compare";
+export const START_COMPARE_EVENT = "redmoth:start-compare";
 
 const MAX_COMPARE = 3; // plus the current app = 4 columns on the compare page
 

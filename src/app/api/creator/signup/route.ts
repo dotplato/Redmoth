@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       slug,
       email,
       passwordHash: await hash(password, 10),
-      bio: "Independent maker on ToolsMade.",
+      bio: "Independent maker on redmoth.",
     },
   });
 

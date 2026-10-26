@@ -26,7 +26,7 @@ export default async function AdminHomePage() {
     <div>
       <PageHeader
         title="Overview"
-        description="How ToolsMade is doing this week."
+        description="How redmoth is doing this week."
         actions={
           <Link href="/admin/tools/new" className="btn btn-primary">
             + New tool

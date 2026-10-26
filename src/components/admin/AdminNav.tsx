@@ -95,7 +95,7 @@ function Brand() {
         <span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
       </span>
       <span className="text-sm font-bold tracking-tight">
-        ToolsMade <span className="font-normal text-[var(--faint)]">Admin</span>
+        redmoth <span className="font-normal text-[var(--faint)]">Admin</span>
       </span>
     </Link>
   );

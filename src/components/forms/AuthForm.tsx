@@ -49,7 +49,7 @@ export function AuthForm({ mode, next = "/account" }: { mode: "signup" | "login"
         {forSubmit
           ? "A free creator account lets you list apps and track their review. You’ll go straight to the form."
           : signup
-            ? "Get a profile page, and manage the apps you list on ToolsMade."
+            ? "Get a profile page, and manage the apps you list on redmoth."
             : "Log in to manage your profile and listings."}
       </p>
       <form onSubmit={onSubmit} className="mt-6 grid gap-4">

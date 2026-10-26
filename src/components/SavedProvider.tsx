@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { usePathname, useRouter } from "next/navigation";
 
 // Remembers which app a signed-out visitor tried to save, so it's saved right after they log in.
-const PENDING_KEY = "toolsmade:pending-save";
+const PENDING_KEY = "redmoth:pending-save";
 
 export type SaveKind = "tool" | "flow";
 

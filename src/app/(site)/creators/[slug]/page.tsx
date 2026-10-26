@@ -119,7 +119,7 @@ export default async function CreatorPage({
 
       <section className="container-page py-12 pb-24">
         <p className="text-sm font-bold text-[var(--muted)]">
-          {creator.tools.length} {creator.tools.length === 1 ? "tool" : "tools"} on ToolsMade
+          {creator.tools.length} {creator.tools.length === 1 ? "tool" : "tools"} on redmoth
         </p>
         {creator.tools.length ? (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

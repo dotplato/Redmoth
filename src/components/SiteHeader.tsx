@@ -6,9 +6,9 @@ export async function SiteHeader({ savedCount = 0 }: { savedCount?: number }) {
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[color:rgb(247_247_244_/_0.85)] backdrop-blur-xl">
       <div className="container-page flex h-16 items-center justify-between gap-3">
-        <Link href="/" className="flex items-center gap-2.5" aria-label="ToolsMade home">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="redmoth home">
           <BrandMark />
-          <span className="hidden text-[15px] font-bold tracking-tight min-[400px]:inline">ToolsMade</span>
+          <span className="hidden text-[15px] font-bold tracking-tight min-[400px]:inline">redmoth</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm sm:gap-2">
           <Link href="/discover" className="btn btn-ghost hidden md:inline-flex">

@@ -1,6 +1,6 @@
 import type { Pricing } from "@prisma/client";
 
-export const SITE_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "ToolsMade";
+export const SITE_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "redmoth";
 
 export const SITE_DESCRIPTION =
   "Discover the best AI tools and the workflows people build with them. Compare apps by price and category, read real reviews and examples, and visit each tool's own site.";

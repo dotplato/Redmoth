@@ -143,7 +143,7 @@ async function callModel(input: Input, context: string | null, webSearch: boolea
     headers: {
       authorization: `Bearer ${apiKey}`,
       "content-type": "application/json",
-      "x-title": "ToolsMade Admin",
+      "x-title": "redmoth Admin",
     },
     body: JSON.stringify({
       model: process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-ultra-550b-a55b:free",
@@ -225,7 +225,7 @@ async function gatherThirdParty(name: string, websiteHint?: string) {
 
 async function getJson(url: string) {
   const res = await fetch(url, {
-    headers: { "user-agent": "ToolsMadeAdmin/1.0" },
+    headers: { "user-agent": "redmothAdmin/1.0" },
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`${url} -> ${res.status}`);
@@ -234,7 +234,7 @@ async function getJson(url: string) {
 
 async function fetchSiteText(url: string) {
   const res = await fetch(url, {
-    headers: { "user-agent": "Mozilla/5.0 ToolsMadeAdmin/1.0" },
+    headers: { "user-agent": "Mozilla/5.0 redmothAdmin/1.0" },
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) return null;

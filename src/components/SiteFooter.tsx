@@ -8,7 +8,7 @@ export function SiteFooter() {
         <div>
           <Link href="/" className="flex items-center gap-2.5">
             <BrandMark />
-            <span className="text-[15px] font-bold tracking-tight">ToolsMade</span>
+            <span className="text-[15px] font-bold tracking-tight">redmoth</span>
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-6 text-[var(--muted)]">
             A hand-picked collection of independent AI products. Every Visit button opens the tool&rsquo;s own
@@ -46,7 +46,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-[var(--line)]">
         <div className="container-page flex flex-col gap-1 py-5 text-xs text-[var(--faint)] sm:flex-row sm:justify-between">
-          <p>© {new Date().getFullYear()} ToolsMade</p>
+          <p>© {new Date().getFullYear()} redmoth</p>
           <p>Made for people who make with AI.</p>
         </div>
       </div>

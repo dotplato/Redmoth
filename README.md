@@ -1,4 +1,4 @@
-# ToolsMade
+# redmoth
 
 A Next.js marketplace for AI tools. Each listing has product info, App Store-style screenshots, and a Visit action that opens the tool’s own site **without adding UTM or referral parameters**.
 
@@ -26,7 +26,7 @@ If `admin.localhost` does not resolve, add `127.0.0.1 admin.localhost` to your h
 
 Default admin (from `.env`):
 
-- Email: `admin@toolsmade.local`
+- Email: `admin@redmoth.local`
 - Password: `admin1234`
 
 ## Visit links

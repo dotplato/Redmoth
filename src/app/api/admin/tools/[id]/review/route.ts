@@ -43,27 +43,27 @@ export async function POST(request: Request, { params }: Ctx) {
     const site = process.env.PUBLIC_SITE_URL ?? "http://localhost:3000";
     const text = published
       ? [
-          `Good news — ${tool.name} has been approved and is now live on ToolsMade.`,
+          `Good news — ${tool.name} has been approved and is now live on redmoth.`,
           "",
           `See it here: ${site}/tools/${tool.slug}`,
           ...(feedback ? ["", "A note from our team:", feedback] : []),
           "",
           "Thanks for listing with us,",
-          "The ToolsMade team",
+          "The redmoth team",
         ].join("\n")
       : [
-          `Thanks for submitting ${tool.name} to ToolsMade. We weren't able to approve it this time.`,
+          `Thanks for submitting ${tool.name} to redmoth. We weren't able to approve it this time.`,
           "",
           "Feedback from our team:",
           feedback,
           "",
           `You can make changes and submit again at ${site}/submit.`,
           "",
-          "The ToolsMade team",
+          "The redmoth team",
         ].join("\n");
     email = await sendEmail({
       to: tool.submitterEmail,
-      subject: published ? `${tool.name} is live on ToolsMade` : `Update on your ToolsMade submission: ${tool.name}`,
+      subject: published ? `${tool.name} is live on redmoth` : `Update on your redmoth submission: ${tool.name}`,
       text,
       toolId: tool.id,
     });
