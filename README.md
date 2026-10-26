@@ -1,7 +1,7 @@
 # redmoth
 
 A Next.js marketplace for AI tools. Each listing has product info, App Store-style screenshots, and a Visit action that opens the tool’s own site **without adding UTM or referral parameters**.
-
+good shit.
 ## Stack
 
 - Next.js App Router, deployed on **Vercel**
