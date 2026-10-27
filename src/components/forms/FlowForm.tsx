@@ -138,6 +138,8 @@ export function FlowForm({
     }
     // Stays "Publishing…" (saving is never reset on success) until the flow page replaces this one.
     router.push(`/flows/${json.flow.slug}${existing ? "" : "?created=1"}`);
+    // Drops pages preloaded before this change (flow lists, home), so they show it when opened next.
+    router.refresh();
   }
 
   const err = (key: string) => (errors[key] ? <p className="text-xs font-bold text-[var(--danger)]">{errors[key]}</p> : null);

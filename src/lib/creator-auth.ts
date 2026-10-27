@@ -20,6 +20,14 @@ export async function getCreatorSession(): Promise<CreatorSession | null> {
   return creator ? { sub: creator.id, slug: creator.slug } : null;
 }
 
+/**
+ * The signed-in user's id, or null. Queries can filter by `creator: { userId }` with it, so they run
+ * in parallel with getCurrentCreator() instead of waiting for the creator row (one less database round trip).
+ */
+export async function getSessionUserId(): Promise<string | null> {
+  return (await getAuthSession())?.user.id ?? null;
+}
+
 /** Only same-site paths are allowed as post-login destinations (no "//evil.com" or absolute URLs). */
 export function safeNext(next: string | string[] | undefined, fallback = "/account") {
   const value = Array.isArray(next) ? next[0] : next;

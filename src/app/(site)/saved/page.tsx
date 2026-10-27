@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FlowCard } from "@/components/FlowCard";
 import { ToolCard } from "@/components/ToolCard";
-import { getCreatorSession } from "@/lib/creator-auth";
+import { getSessionUserId } from "@/lib/creator-auth";
 import { FLOW_CARD } from "@/lib/flows";
 import { prisma } from "@/lib/prisma";
 import { VISITS } from "@/lib/queries";
@@ -13,17 +13,18 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Saved", ...NOINDEX };
 
 export default async function SavedPage() {
-  const session = await getCreatorSession();
-  if (!session) redirect("/login?next=/saved");
+  const userId = await getSessionUserId();
+  if (!userId) redirect("/login?next=/saved");
 
+  // Filtering through the user id skips waiting for the creator row first.
   const [saved, savedFlows] = await Promise.all([
     prisma.savedTool.findMany({
-      where: { creatorId: session.sub, tool: { status: "PUBLISHED" } },
+      where: { creator: { userId }, tool: { status: "PUBLISHED" } },
       orderBy: { createdAt: "desc" },
       include: { tool: { include: { category: true, ...VISITS } } },
     }),
     prisma.savedFlow.findMany({
-      where: { creatorId: session.sub },
+      where: { creator: { userId } },
       orderBy: { createdAt: "desc" },
       include: { flow: { include: FLOW_CARD } },
     }),

@@ -6,7 +6,8 @@ import { useEffect, useId, useRef, useState } from "react";
 
 /**
  * Below md, the header keeps only Discover and "Submit an app"; everything else lives in this menu.
- * Closes on Escape, on a click outside, and whenever the page changes.
+ * Closes on Escape, on a click outside, and whenever the page changes. The main links preload in full
+ * when the menu opens (like the desktop header's), so most taps land on an already-loaded page.
  */
 export function MobileMenu({ signedIn, savedCount }: { signedIn: boolean; savedCount: number }) {
   const [openOn, setOpenOn] = useState<string | null>(null);
@@ -61,15 +62,15 @@ export function MobileMenu({ signedIn, savedCount }: { signedIn: boolean; savedC
           className="absolute inset-x-0 top-full border-b border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-lg)]"
         >
           <div className="container-page grid gap-1 py-3">
-            <Link href="/tools" onClick={close} className={item}>
+            <Link href="/tools" prefetch onClick={close} className={item}>
               Tools
             </Link>
-            <Link href="/flows" onClick={close} className={item}>
+            <Link href="/flows" prefetch onClick={close} className={item}>
               Flows
             </Link>
             {signedIn ? (
               <>
-                <Link href="/saved" onClick={close} className={item}>
+                <Link href="/saved" prefetch onClick={close} className={item}>
                   Saved
                   {savedCount ? <span className="text-sm font-normal text-[var(--muted)]">{savedCount}</span> : null}
                 </Link>

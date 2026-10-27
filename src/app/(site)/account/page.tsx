@@ -5,7 +5,7 @@ import { ProfileForm } from "@/components/forms/ProfileForm";
 import { FlowMark } from "@/components/FlowMark";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { ToolLogo } from "@/components/ToolLogo";
-import { getCurrentCreator } from "@/lib/creator-auth";
+import { getCurrentCreator, getSessionUserId } from "@/lib/creator-auth";
 import { prisma } from "@/lib/prisma";
 import { NOINDEX } from "@/lib/seo";
 
@@ -14,22 +14,26 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Your account", ...NOINDEX };
 
 export default async function AccountPage() {
-  const creator = await getCurrentCreator();
-  if (!creator) redirect("/login");
+  const userId = await getSessionUserId();
+  if (!userId) redirect("/login");
 
-  const [tools, flows] = await Promise.all([
+  // Filtering through the user id lets the lists load alongside the creator row, not after it.
+  const mine = { userId };
+  const [creator, tools, flows] = await Promise.all([
+    getCurrentCreator(),
     prisma.tool.findMany({
       // Apps listed under this profile, plus ones this account submitted for another maker/company.
-      where: { OR: [{ creatorId: creator.id }, { submittedById: creator.id }] },
+      where: { OR: [{ creator: mine }, { submittedBy: mine }] },
       orderBy: { createdAt: "desc" },
       include: { category: true },
     }),
     prisma.flow.findMany({
-      where: { authorId: creator.id },
+      where: { author: mine },
       orderBy: { createdAt: "desc" },
       include: { category: true, stack: { orderBy: { position: "asc" }, include: { tool: { select: { name: true, logoUrl: true } } } }, _count: { select: { steps: true } } },
     }),
   ]);
+  if (!creator) redirect("/login");
 
   return (
     <div className="container-page py-12 pb-24">

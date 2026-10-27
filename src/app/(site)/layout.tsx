@@ -1,18 +1,20 @@
 import { SavedProvider } from "@/components/SavedProvider";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getCreatorSession } from "@/lib/creator-auth";
+import { getCreatorSession, getSessionUserId } from "@/lib/creator-auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const session = await getCreatorSession();
-  const [savedTools, savedFlows] = session
+  const userId = await getSessionUserId();
+  // The saved lists filter through the user id, so they load alongside the creator row, not after it.
+  const [session, savedTools, savedFlows] = userId
     ? await Promise.all([
-        prisma.savedTool.findMany({ where: { creatorId: session.sub }, select: { toolId: true } }),
-        prisma.savedFlow.findMany({ where: { creatorId: session.sub }, select: { flowId: true } }),
+        getCreatorSession(),
+        prisma.savedTool.findMany({ where: { creator: { userId } }, select: { toolId: true } }),
+        prisma.savedFlow.findMany({ where: { creator: { userId } }, select: { flowId: true } }),
       ])
-    : [[], []];
-  const saved = [...savedTools.map((row) => row.toolId), ...savedFlows.map((row) => row.flowId)];
+    : [null, [], []];
+  const saved = session ? [...savedTools.map((row) => row.toolId), ...savedFlows.map((row) => row.flowId)] : [];
 
   return (
     // Keyed by account so logging in/out starts from that account's saved list.

@@ -21,6 +21,8 @@ export function DeleteFlowButton({ id, title }: { id: string; title: string }) {
       return;
     }
     router.push("/account");
+    // Drops pages preloaded before the delete (flow lists, home, saved), so the flow is gone from them too.
+    router.refresh();
   }
 
   return (
