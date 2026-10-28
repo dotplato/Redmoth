@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmptyRow, PageHeader, StatusBadge } from "@/components/admin/PageHeader";
+import { ToolCsvActions } from "@/components/admin/ToolCsvActions";
 import { ScoreBadge } from "@/components/forms/ScoreMeter";
 import { ToolLogo } from "@/components/ToolLogo";
 import { scoreTool } from "@/lib/listing-score";
@@ -20,9 +21,12 @@ export default async function AdminToolsPage() {
         title="Tools"
         description={`${tools.length} listed`}
         actions={
-          <Link href="/admin/tools/new" className="btn btn-primary">
-            + New tool
-          </Link>
+          <>
+            <ToolCsvActions />
+            <Link href="/admin/tools/new" className="btn btn-primary">
+              + New tool
+            </Link>
+          </>
         }
       />
 
