@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCreatorSession } from "@/lib/creator-auth";
+import { BurstLink } from "./BurstLink";
 import { MobileMenu } from "./MobileMenu";
 import { SiteLogo, SiteSymbol } from "./SiteLogo";
 
@@ -52,9 +53,9 @@ export async function SiteHeader({ savedCount = 0 }: { savedCount?: number }) {
             </svg>
             Create Flow
           </Link>
-          <Link href="/submit" className="btn btn-accent whitespace-nowrap px-3 sm:px-4">
+          <BurstLink href="/submit">
             Submit an app
-          </Link>
+          </BurstLink>
           <MobileMenu signedIn={Boolean(session)} savedCount={savedCount} />
         </nav>
       </div>

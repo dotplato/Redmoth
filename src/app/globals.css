@@ -15,6 +15,9 @@
   --accent-hover: #c81e21;
   --accent-ink: #ffffff;
   --accent-soft: #fde8e8;
+  /* Supporting colours the "Submit an app" button sweeps through on hover (.btn-burst). */
+  --burst-orange: #ff7a1a;
+  --burst-magenta: #e0287d;
   --go: #0b0b0b;
   --go-ink: #ffffff;
   --ok: #1d7a49;
@@ -172,6 +175,124 @@
 
   .btn-accent:hover {
     background: var(--accent-hover);
+  }
+
+  /* "Submit an app": the hover-me button the client supplied (same layers and timings), recoloured
+     (brand red, swept by orange and magenta, ending on brand red) and sized like .btn so it lines up
+     with the other nav buttons. Markup: BurstLink.tsx. */
+  .btn-burst {
+    --burst-ease: cubic-bezier(0.19, 1, 0.22, 1);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    padding-inline: 1rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    white-space: nowrap;
+    color: var(--accent-ink);
+  }
+
+  .btn-burst:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .btn-burst-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 2rem;
+    background: var(--accent);
+    transition: transform 1.8s var(--burst-ease);
+  }
+
+  .btn-burst-layers {
+    position: absolute;
+    top: -60%;
+    left: 50%;
+    width: max(200%, 10rem);
+    aspect-ratio: 1;
+    transform: translateX(-50%);
+  }
+
+  .btn-burst-layer {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    transform: scale(0);
+  }
+
+  .btn-burst-layer:nth-child(1) {
+    background: var(--burst-orange);
+  }
+
+  .btn-burst-layer:nth-child(2) {
+    background: var(--burst-magenta);
+  }
+
+  .btn-burst-layer:nth-child(3) {
+    background: var(--accent);
+  }
+
+  .btn-burst-inner,
+  .btn-burst-static,
+  .btn-burst-hover {
+    display: block;
+    pointer-events: none;
+  }
+
+  .btn-burst-inner {
+    position: relative;
+  }
+
+  .btn-burst-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transform: translateY(70%);
+  }
+
+  /* Transitions are only set in the active state, so leaving the button resets it at once (as in the original). */
+  .btn-burst:is(:hover, :focus-visible) .btn-burst-static {
+    opacity: 0;
+    transform: translateY(-70%);
+    transition:
+      transform 1.4s var(--burst-ease),
+      opacity 0.3s linear;
+  }
+
+  .btn-burst:is(:hover, :focus-visible) .btn-burst-hover {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      transform 1.4s var(--burst-ease),
+      opacity 1.4s var(--burst-ease);
+  }
+
+  .btn-burst:is(:hover, :focus-visible) .btn-burst-layer {
+    transform: scale(1);
+    transition:
+      transform 1.3s var(--burst-ease),
+      opacity 0.3s linear;
+  }
+
+  .btn-burst:is(:hover, :focus-visible) .btn-burst-layer:nth-child(2) {
+    transition-delay: 0.1s;
+  }
+
+  .btn-burst:is(:hover, :focus-visible) .btn-burst-layer:nth-child(3) {
+    transition-delay: 0.2s;
+  }
+
+  /* A little narrower on phones so it fits beside the logo, Discover and the menu (as the old button did). */
+  @media (max-width: 639px) {
+    .btn-burst {
+      padding-inline: 0.75rem;
+    }
   }
 
   .btn-outline {
@@ -491,6 +612,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* No sweep or rolling label: the button jumps straight to its end state. */
+  .btn-burst:is(:hover, :focus-visible) .btn-burst-layer,
+  .btn-burst:is(:hover, :focus-visible) .btn-burst-static,
+  .btn-burst:is(:hover, :focus-visible) .btn-burst-hover {
+    transition: none;
+  }
+
   .practice,
   .practice-edge {
     animation: none;
