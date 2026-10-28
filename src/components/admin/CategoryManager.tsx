@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slug";
 import { Spinner } from "../Spinner";
 import { EmptyRow } from "./PageHeader";
+import { celebrate } from "@/lib/success";
 
 type Category = { id: string; name: string; slug: string; _count: { tools: number } };
 
@@ -43,6 +44,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
     setSlug("");
     setSlugTouched(false);
     setFetching(false);
+    celebrate("Category added");
     refresh();
   }
 

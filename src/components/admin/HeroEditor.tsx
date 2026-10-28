@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { HERO_SLOTS, heroSlotPoint } from "@/lib/hero-slots";
 import { SYMBOL_SRC } from "../SiteLogo";
 import { ToolLogo } from "../ToolLogo";
+import { celebrate } from "@/lib/success";
 
 type App = { id: string; name: string; tagline: string; logoUrl: string | null };
 
@@ -70,6 +71,7 @@ export function HeroEditor({
     setSlots(next);
     setIsCurated(json.mode === "curated");
     setMessage(json.mode === "curated" ? done : "Reset — the hero fills itself automatically again.");
+    celebrate("Hero saved");
     router.refresh();
     return true;
   }

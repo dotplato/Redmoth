@@ -7,6 +7,7 @@ import { Spinner } from "../Spinner";
 import { ToolLogo } from "../ToolLogo";
 import { FLOW_LIMITS } from "@/lib/flow-limits";
 import { uploadFormFiles } from "@/lib/upload-client";
+import { celebrate } from "@/lib/success";
 
 export type PickableApp = { id: string; name: string; tagline: string; logoUrl: string | null; category: string };
 
@@ -136,6 +137,7 @@ export function FlowForm({
       if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) el.focus({ preventScroll: true });
       return;
     }
+    celebrate(existing ? "Flow saved" : "Flow published");
     // Stays "Publishing…" (saving is never reset on success) until the flow page replaces this one.
     router.push(`/flows/${json.flow.slug}${existing ? "" : "?created=1"}`);
     // Drops pages preloaded before this change (flow lists, home), so they show it when opened next.

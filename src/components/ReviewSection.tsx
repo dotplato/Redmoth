@@ -8,6 +8,7 @@ import { Spinner } from "./Spinner";
 import { STAR_PATH, Stars } from "./Stars";
 import { ToolLogo } from "./ToolLogo";
 import type { ReviewKind, ReviewView } from "@/lib/reviews";
+import { celebrate } from "@/lib/success";
 
 const LABELS = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 const PAGE = 5;
@@ -61,6 +62,7 @@ export function ReviewSection({
       setError(json.error ?? "Something went wrong. Please try again.");
       return;
     }
+    if (nextMethod === "POST") celebrate("Review posted");
     // Switch views together with the refreshed reviews, not before them.
     router.refresh(() => {
       if (nextMethod === "DELETE") {

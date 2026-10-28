@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Righteous, Sansation } from "next/font/google";
 import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/seo";
 import "./globals.css";
+import { SuccessAnimation } from "@/components/SuccessAnimation";
 
 // Righteous for headings (single weight), Sansation for everything else.
 const righteous = Righteous({
@@ -44,7 +45,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${righteous.variable} ${sansation.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        <SuccessAnimation />
+      </body>
     </html>
   );
 }

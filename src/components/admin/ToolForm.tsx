@@ -12,6 +12,7 @@ import { MAX_SCREENSHOTS } from "@/lib/upload-limits";
 import { Spinner } from "../Spinner";
 import { ScreenshotPicker, type PickedShot } from "../forms/ScreenshotPicker";
 import { AiFillApply, AiFillPanel } from "./AiFillPanel";
+import { celebrate } from "@/lib/success";
 
 type Option = { id: string; name: string };
 type Shot = { id: string; imageUrl: string; alt: string };
@@ -171,6 +172,7 @@ export function ToolForm({
     await uploadPending(json.tool.id);
     setRequesting(false);
     setAiFilled(false);
+    celebrate("Tool saved");
     router.push(`/admin/tools/${json.tool.id}`);
   }
 

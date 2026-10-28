@@ -12,6 +12,7 @@ import { ScenarioGuide } from "./ScenarioGuide";
 import { ScoreMeter, ScorePill } from "./ScoreMeter";
 import { ScreenshotPicker, type PickedShot } from "./ScreenshotPicker";
 import { YesNo } from "./YesNo";
+import { SuccessMark } from "../SuccessAnimation";
 
 type Option = { id: string; name: string };
 type Errors = Record<string, string>;
@@ -172,6 +173,7 @@ export function SubmitToolForm({
       focusFirstError(next);
       return;
     }
+    // The done screen plays the success animation itself, so no celebrate() overlay here.
     setDone({ name: json.tool.name });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -179,8 +181,9 @@ export function SubmitToolForm({
   if (done) {
     return (
       <div className="card mx-auto max-w-xl p-8 text-center sm:p-12">
-        <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[var(--accent)] text-2xl text-[var(--accent-ink)]">✓</span>
-        <h2 className="mt-6 text-3xl">
+        {/* The burst needs room while it plays; the negative margins trim the empty space around the settled tick. */}
+        <SuccessMark className="mx-auto -mb-4 -mt-10 size-40" />
+        <h2 className="mt-2 text-3xl">
           {existing ? `${done.name} is back in review` : `Thanks — ${done.name} is in review`}
         </h2>
         <p className="mt-3 text-[var(--muted)]">

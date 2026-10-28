@@ -5,6 +5,7 @@ import { useRouterTransition } from "@/lib/use-router-transition";
 import { uploadFormFiles } from "@/lib/upload-client";
 import { Spinner } from "../Spinner";
 import { ToolLogo } from "../ToolLogo";
+import { celebrate } from "@/lib/success";
 
 export function ProfileForm({
   creator,
@@ -39,6 +40,7 @@ export function ProfileForm({
       setErrors(json.errors ?? { form: json.error ?? "Could not save." });
       return;
     }
+    celebrate("Profile saved");
     router.refresh(() => setSaved(true));
   }
 

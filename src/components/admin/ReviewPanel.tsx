@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouterTransition } from "@/lib/use-router-transition";
 import { Spinner } from "../Spinner";
+import { celebrate } from "@/lib/success";
 
 type Props = {
   toolId: string;
@@ -56,6 +57,7 @@ export function ReviewPanel({ toolId, status, submitterEmail, submittedAt, revie
             ? `Email failed: ${json.email.error}`
             : "No submitter email on file.";
     setNotice(`${decision === "publish" ? "Published" : "Rejected"}. ${mail}`);
+    celebrate(decision === "publish" ? "Published" : "Rejected");
     setFeedback("");
     router.refresh();
   }

@@ -4,6 +4,7 @@ import { ChangeEvent, useRef, useState } from "react";
 import { useRouterTransition } from "@/lib/use-router-transition";
 import type { ToolImportResult } from "@/lib/tool-csv";
 import { Spinner } from "../Spinner";
+import { celebrate } from "@/lib/success";
 
 const CSV_URL = "/api/admin/tools/csv";
 
@@ -32,7 +33,10 @@ export function ToolCsvActions() {
       const res = await fetch(CSV_URL, { method: "POST", headers: { "content-type": "text/csv" }, body: await file.text() });
       const json = (await res.json().catch(() => null)) as ToolImportResult | null;
       setResult(json ?? { ok: false, errors: ["Something went wrong. Please try again."] });
-      if (json?.ok) router.refresh();
+      if (json?.ok) {
+        celebrate("Tools imported");
+        router.refresh();
+      }
     } catch {
       setResult({ ok: false, errors: ["Could not reach the server. Check your connection and try again."] });
     } finally {

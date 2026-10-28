@@ -7,6 +7,7 @@ import { slugify } from "@/lib/slug";
 import { ToolLogo } from "../ToolLogo";
 import { Spinner } from "../Spinner";
 import { EmptyRow } from "./PageHeader";
+import { celebrate } from "@/lib/success";
 
 type Creator = {
   id: string;
@@ -56,6 +57,7 @@ export function CreatorManager({ creators }: { creators: Creator[] }) {
     setSlug("");
     setSlugTouched(false);
     setFetching(false);
+    celebrate("Creator added");
     refresh();
   }
 
