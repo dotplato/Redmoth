@@ -52,6 +52,17 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendLinkEmail(user.email, `Reset your ${SITE_NAME} password`, "Click the link below to choose a new password.", url);
     },
+    // Signing up again with an existing email gets the same generic success response (so emails can't be probed).
+    // If that account was never confirmed, send a fresh link instead of silently doing nothing.
+    onExistingUserSignUp: async ({ user }, request) => {
+      if (user.emailVerified) return;
+      const body = (await request?.json().catch(() => null)) as { callbackURL?: string } | null;
+      await auth.api.sendVerificationEmail({
+        body: { email: user.email, callbackURL: body?.callbackURL },
+        // Forwarded so the link points at the domain the signup came in on.
+        headers: request?.headers,
+      });
+    },
   },
   emailVerification: {
     sendOnSignUp: true,
